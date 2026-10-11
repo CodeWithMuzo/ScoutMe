@@ -1,0 +1,663 @@
+{
+  "database": "ktff.db",
+  "tables": [
+    {
+      "name": "leagues",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "tier",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "gender",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "seasons",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "ktff_season_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "clubs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "stadium_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "president",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "phone",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "coaches",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "ktff_coach_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "license_no",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "club_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "nationality",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "birth_date",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "birth_place",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "gender",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "players",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "ktff_player_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "license_no",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "nationality",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "current_club",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "birth_date",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "birth_place",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "gender",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "positions",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "photo_url",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "player_career",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "player_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "season",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "club_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "registration_date",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "license_status",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "player_id",
+          "ref_table": "players",
+          "ref_column": "id",
+          "on_delete": "CASCADE"
+        }
+      ]
+    },
+    {
+      "name": "matches",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "ktff_match_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "season",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "home_club",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "away_club",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "home_score",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "away_score",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "match_time",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "stadium_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "referee",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "match_lineups",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "match_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "club_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "is_home",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "license_no",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "shirt_number",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "is_starter",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "is_captain",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "is_goalkeeper",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "sub_in_minute",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "sub_out_minute",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "minutes_played",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "match_id",
+          "ref_table": "matches",
+          "ref_column": "id",
+          "on_delete": "CASCADE"
+        }
+      ]
+    },
+    {
+      "name": "match_events",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "match_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "club_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "minute",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "event_type",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "detail",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "match_id",
+          "ref_table": "matches",
+          "ref_column": "id",
+          "on_delete": "CASCADE"
+        }
+      ]
+    },
+    {
+      "name": "player_season_stats",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "is_primary_key": true,
+          "nullable": true
+        },
+        {
+          "name": "player_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "ktff_player_id",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "season",
+          "type": "TEXT",
+          "is_primary_key": false,
+          "nullable": false
+        },
+        {
+          "name": "goals",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "yellow_cards",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "red_cards",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "starter_matches",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "sub_in_matches",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "bench_unused_matches",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "total_played_matches",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        },
+        {
+          "name": "total_squad_matches",
+          "type": "INTEGER",
+          "is_primary_key": false,
+          "nullable": true
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ],
+      "foreign_keys": [
+        {
+          "column": "player_id",
+          "ref_table": "players",
+          "ref_column": "id",
+          "on_delete": "CASCADE"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+# Cache & Temp Files
+data/raw_cache/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.streamlit/
+*.log
+
+# Environments
+venv/
+env/
+.env
+
+# Large HTML reports
+*.html

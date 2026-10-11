@@ -1,0 +1,107 @@
+Table leagues {
+  id integer [pk]
+  name text
+  slug text
+  tier integer
+  gender text
+}
+
+Table seasons {
+  id integer [pk]
+  name text
+  ktff_season_id integer
+}
+
+Table clubs {
+  id integer [pk]
+  name text
+  slug text
+  city text
+  stadium_name text
+  president text
+  phone text
+  address text
+}
+
+Table coaches {
+  id integer [pk]
+  ktff_coach_id integer
+  name text
+  license_no text
+  role text
+  club_name text
+  nationality text
+  birth_date text
+  birth_place text
+  gender text
+}
+
+Table players {
+  id integer [pk]
+  ktff_player_id integer
+  license_no text
+  name text
+  nationality text
+  current_club text
+  birth_date text
+  birth_place text
+  gender text
+  positions text
+  status text
+}
+
+Table player_career {
+  id integer [pk]
+  player_id integer
+  season text
+  club_name text
+  league_name text
+  registration_date text
+  license_status text
+}
+
+Table matches {
+  id integer [pk]
+  ktff_match_id integer
+  season text
+  league_name text
+  home_club text
+  away_club text
+  home_score integer
+  away_score integer
+  match_date text
+  match_time text
+  stadium_name text
+  status text
+  referee text
+}
+
+Table match_lineups {
+  id integer [pk]
+  match_id integer
+  club_name text
+  is_home integer
+  player_name text
+  license_no text
+  shirt_number text
+  is_starter integer
+  is_captain integer
+  is_goalkeeper integer
+  sub_in_minute integer
+  sub_out_minute integer
+  minutes_played integer
+}
+
+Table match_events {
+  id integer [pk]
+  match_id integer
+  club_name text
+  minute integer
+  event_type text
+  player_name text
+  detail text
+}
+
+Ref: player_career.player_id > players.id
+Ref: match_lineups.match_id > matches.id
+Ref: match_events.match_id > matches.id
