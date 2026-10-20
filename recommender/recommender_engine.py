@@ -122,12 +122,12 @@ class ScoutMeRecommender:
             for pid, ev_club, dec, tf_r, feas_r in cur.fetchall():
                 same_club = normalize_text(ev_club) == normalize_text(club_name)
                 weight = 1.0 if same_club else 0.35
-                dec_str = str(dec or '')
-                if 'Hayır' in dec_str or 'Uygun Değil' in dec_str:
+                dec_str = str(dec or '').lower()
+                if 'hayır' in dec_str or 'uygun değil' in dec_str or 'reject' in dec_str:
                     adjustments[pid] = adjustments.get(pid, 0.0) - 0.14 * weight
-                elif 'Evet' in dec_str:
+                elif 'evet' in dec_str or 'buy' in dec_str or 'rotation' in dec_str:
                     adjustments[pid] = adjustments.get(pid, 0.0) + 0.06 * weight
-                elif 'Takip' in dec_str:
+                elif 'takip' in dec_str or 'watchlist' in dec_str:
                     adjustments[pid] = adjustments.get(pid, 0.0) + 0.03 * weight
             conn.close()
         except Exception:

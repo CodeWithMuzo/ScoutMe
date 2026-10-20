@@ -20,6 +20,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 from recommender.recommender_engine import ScoutMeRecommender, normalize_text
+from database.github_sync import push_evaluations_to_github, pull_evaluations_from_github_to_db
 
 # =============================================================================
 # SAYFA VE STITCH "SWISS PITCH MINIMAL" STİL YAPILANDIRMASI
@@ -496,6 +497,19 @@ def get_player_full_details(player_id):
     conn.close()
     return row, seasons
 
+@st.cache_resource
+def init_remote_evaluations_if_cloud():
+    """Restores evaluations from GitHub 'evaluations-data' branch on cloud container boot."""
+    import os
+    if os.name != 'nt':
+        try:
+            pull_evaluations_from_github_to_db()
+        except Exception:
+            pass
+    return True
+
+init_remote_evaluations_if_cloud()
+
 def save_evaluation_to_db(coach_name, club_name, player_id, player_name,
                           target_pos, formation, player_type, is_known,
                           model_score, tactical_fit, playing_time,
@@ -513,6 +527,7 @@ def save_evaluation_to_db(coach_name, club_name, player_id, player_name,
           playing_time, feasibility, decision, note))
     conn.commit()
     conn.close()
+    push_evaluations_to_github()
 
 def load_evaluations_summary():
     conn = sqlite3.connect('data/ktff.db')
