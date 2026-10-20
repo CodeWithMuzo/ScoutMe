@@ -1,0 +1,20 @@
+id,coach_name,club_name,player_id,player_name,target_position,model_score,tactical_fit_rating,playing_time_rating,feasibility_rating,decision,feedback_note,created_at,formation,player_type,is_known
+1,ERDN BREK,China Bazaar Genlik Gc TSK,1,CEMAL MELHEM,FW,83.2,5,4,4,buy,"Ceza sahasnda ok hareketli, bitiricilii sisteme tam oturur.",2026-10-04 17:46:25,,,
+2,ERDN BREK,China Bazaar Genlik Gc TSK,2,HARUN TEMEL,FW,81.0,4,4,4,buy,"Fizik gc yksek, kanat forvet rotasyonunda ok i yapar.",2026-10-04 17:46:25,,,
+3,ERDN BREK,China Bazaar Genlik Gc TSK,3,DAVUD JUMAKULYYEV,FW,79.7,4,3,4,rotation,"Gen ve alk dzeyi yksek, yedekten girip skor deitirebilir.",2026-10-04 17:46:25,,,
+4,NAZIM AKTUN,Doan Trk Birlii,4,ZHN TEMELC,DF,85.5,5,5,5,buy,"Lider stoper, duran toplarda da byk tehdit. Kesinlikle ilk 11.",2026-10-04 17:46:25,,,
+5,NAZIM AKTUN,Doan Trk Birlii,5,DEMR TANRIVERD,DF,80.0,4,4,4,buy,"Gen yana ramen pozisyon bilgisi olgun, geliime ak.",2026-10-04 17:46:25,,,
+6,NAZIM AKTUN,Doan Trk Birlii,6,KAZIM ORHAN,DF,78.2,4,3,4,rotation,Savunma kurgumuza yedek g olarak derinlik kazandrr.,2026-10-04 17:46:25,,,
+7,CEMRE YILDIZEV,Cihangir GSK,7,ARAS KOLUKISSA,MF,87.3,5,5,4,buy,Merkezde oyun kurucu rolnde takmn pas temposunu ynetir.,2026-10-04 17:46:25,,,
+8,CEMRE YILDIZEV,Cihangir GSK,8,BAYRAM ACHILOV,MF,87.3,5,4,4,buy,"Hem defansif hem ofansif geilerde dinamik, tam aradmz 8 numara.",2026-10-04 17:46:25,,,
+9,CEMRE YILDIZEV,Cihangir GSK,9,DAMIR GOLOSHCHAPOV,MF,86.6,4,4,4,buy,"Top teknii yksek, dar alandan klar baarl.",2026-10-04 17:46:25,,,
+10,SABR DENZ,Dumlupnar TSK,10,OUSMANE DIABY,MF,88.0,5,5,4,buy,"Ligin en dominant yabanclarndan biri, ilk 11 dorudan deimez.",2026-10-04 17:46:25,,,
+11,SABR DENZ,Dumlupnar TSK,11,HASAN AYDOMU,MF,75.3,4,3,4,watchlist,"Gzlemlenebilir, taktik disiplini oturursa rotasyona girer.",2026-10-04 17:46:25,,,
+12,OKTAY ERDEM,Alsancak Yeilova SK,12,KERFALA BANGOURA,FW,81.7,5,5,5,buy,"Hzl ve patlayc forvet, kontratak futbolumuza kusursuz uyar.",2026-10-04 17:46:25,,,
+13,OKTAY ERDEM,Alsancak Yeilova SK,13,ALPHONSE GOMIS,FW,74.9,4,4,4,rotation,Fiziksel mcadele gc yksek tamamlayc forvet.,2026-10-04 17:46:25,,,
+14,KEMAL YREKL,etinkaya TSK,14,DOAN GRGEN,DF,80.1,4,4,4,buy,Defansif sertlii ve hamle zamanlamas gayet iyi.,2026-10-04 17:46:25,,,
+15,KEMAL YREKL,etinkaya TSK,15,SULTAN BABAYEV,DF,76.6,3,3,4,watchlist,"Gen ve potansiyelli, biraz daha tecrbe kazanmas lazm.",2026-10-04 17:46:25,,,
+16,İZZET KAÇMAZ,Maraş GSK,1115,ERTAN YOLAÇ,MF,94.0,1,1,1,reject,Çok genç İlk 11 için oyuncu arıyorum forma şansı bualamaz ,2026-10-20 15:15:40,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
+17,İZZET KAÇMAZ,Maraş GSK,1167,GÖKMEN ESER,MF,93.1,1,1,1,reject,Çok genç süre alamaz ve defans yapamaz ,2026-10-20 15:16:19,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
+18,İZZET KAÇMAZ,Maraş GSK,523,ARTUN AKTUĞ,MF,91.5,3,1,2,watchlist,İlerde işime yarayabilir canlı görmek lazım ,2026-10-20 15:17:47,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
+19,İZZET KAÇMAZ,Maraş GSK,2229,TUNCER NİZAM,MF,91.0,1,1,1,reject,,2026-10-20 15:18:23,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
