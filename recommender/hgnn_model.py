@@ -168,24 +168,31 @@ class ScoutMeHGNN(nn.Module):
         return zp, zc, zt, zs
 
 
-def compute_bpr_loss(zp, zc, edge_player_club, num_neg_samples=1):
+def compute_bpr_loss(zp, zc, edge_player_club, edge_weights=None):
     """
-    Bayesian Personalized Ranking (BPR) Link Prediction Loss:
-    L = - sum_{(u, v) in E+, (u, v-) in E-} log sigma( z_u . z_v - z_u . z_v- )
+    Competition-Weighted Bayesian Personalized Ranking (BPR) Link Prediction Loss:
+    L = - sum_{(u, v) in E+, (u, v-) in E-} w_{u,v} * log sigma( z_u . z_v - z_u . z_v- )
     """
+    if edge_player_club.shape[1] == 0:
+        return torch.tensor(0.0, device=zp.device)
+
     src_p = edge_player_club[0]
     pos_c = edge_player_club[1]
 
     # Positive dot products
     pos_scores = (zp[src_p] * zc[pos_c]).sum(dim=-1)
 
-    # Random negative sampling for clubs
-    num_clubs = zc.shape[0]
-    neg_c = torch.randint(0, num_clubs, (len(src_p),), device=zc.device)
+    # Random negative sampling for target nodes
+    num_targets = zc.shape[0]
+    neg_c = torch.randint(0, num_targets, (len(src_p),), device=zc.device)
     neg_scores = (zp[src_p] * zc[neg_c]).sum(dim=-1)
 
-    loss = -torch.log(torch.sigmoid(pos_scores - neg_scores) + 1e-8).mean()
-    return loss
+    per_edge_loss = -torch.log(torch.sigmoid(pos_scores - neg_scores) + 1e-8)
+    if edge_weights is not None and len(edge_weights) == len(src_p):
+        norm_w = edge_weights / (edge_weights.mean() + 1e-8)
+        per_edge_loss = per_edge_loss * norm_w
+
+    return per_edge_loss.mean()
 
 
 def train_hgnn(epochs=80, lr=0.005, hidden_dim=64, save_path='data/hgnn_embeddings.pt'):
@@ -213,13 +220,16 @@ def train_hgnn(epochs=80, lr=0.005, hidden_dim=64, save_path='data/hgnn_embeddin
 
         zp, zc, zt, zs = model(g)
 
-        # BPR Loss on Player-Club edges
-        loss_pc = compute_bpr_loss(zp, zc, g['edge_player_club'])
+        # BPR Loss on Player-Club edges (weighted by Senior vs Youth minutes)
+        loss_pc = compute_bpr_loss(zp, zc, g['edge_player_club'], g.get('edge_player_club_weight'))
 
         # BPR Loss on Player-Coach edges
         loss_pt = compute_bpr_loss(zp, zt, g['edge_player_coach'])
 
-        total_loss = loss_pc + 0.5 * loss_pt
+        # BPR Loss on Player-Scout archetype edges
+        loss_ps = compute_bpr_loss(zp, zs, g['edge_player_scout'])
+
+        total_loss = loss_pc + 0.5 * loss_pt + 0.3 * loss_ps
         total_loss.backward()
         optimizer.step()
 

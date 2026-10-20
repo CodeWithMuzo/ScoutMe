@@ -5,9 +5,9 @@ Constructs a heterogeneous graph connecting Players, Clubs, Coaches, and Scouts
 from the KTFF SQLite database (data/ktff.db).
 
 Node Types:
-- Player (2,404 nodes): 16-dim feature vector (Skills, OVR, Pos, Age, CI, Diff, etc.)
-- Club (30 nodes): 12-dim feature vector (Tier, Squad OVR, Age, Ratios, Goals)
-- Coach (36 nodes): 8-dim feature vector (Style, Youth ratio, Aggressiveness)
+- Player: 16-dim feature vector (Competition-Calibrated Skills, OVR, Pos, Age, CI, Diff, Senior Ratio, etc.)
+- Club (30 nodes): 12-dim feature vector (Senior Tier, A-Team Squad OVR, Skills, Position Ratios, Senior Goals)
+- Coach (36 nodes): 8-dim feature vector (Style, Youth ratio, Aggressiveness, Tactical consistency)
 - Scout (4 archetype nodes): 8-dim feature vector (Domain emphasis profiles)
 
 Edge Types:
@@ -35,18 +35,22 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         SELECT 
             p.id, p.license_no, p.name, p.current_club, p.birth_date,
             p.position_category, p.primary_position,
-            COALESCE(s.physical_score, p.skill_physical, 60.0),
-            COALESCE(s.shooting_score, p.skill_shooting, 50.0),
-            COALESCE(s.technical_score, p.skill_technical, 60.0),
-            COALESCE(s.defending_score, p.skill_defending, 60.0),
-            COALESCE(s.overall_rating, p.skill_overall, 60.0),
+            COALESCE(s.physical_score, p.skill_physical, 50.0),
+            COALESCE(s.shooting_score, p.skill_shooting, 45.0),
+            COALESCE(s.technical_score, p.skill_technical, 50.0),
+            COALESCE(s.defending_score, p.skill_defending, 50.0),
+            COALESCE(s.overall_rating, p.skill_overall, 50.0),
             COALESCE(s.ci_continuity_index, 0.5),
             COALESCE(s.on_pitch_diff_per90, 0.0),
             COALESCE(s.p90_goals, 0.0),
             COALESCE(s.total_played_matches, 0),
             COALESCE(s.clean_sheets, 0),
             COALESCE(s.age, 24),
-            (SELECT COUNT(*) FROM match_lineups ml WHERE ml.license_no = p.license_no) as a_team_matches
+            COALESCE(s.a_team_matches, 0),
+            COALESCE(s.senior_minutes, 0),
+            COALESCE(s.competition_factor, 0.5),
+            COALESCE(s.total_goals, 0),
+            COALESCE(s.starter_ratio, 0.5)
         FROM players p
         LEFT JOIN player_skills s ON p.id = s.player_id
         ORDER BY p.id
@@ -61,7 +65,9 @@ def build_scoutme_graph(db_path='data/ktff.db'):
 
     for idx, row in enumerate(raw_players):
         (pid, lic, name, club, bdate, pos_cat, prim_pos,
-         phys, shoot, tech, def_sc, ovr, ci, diff, p90_g, played_m, cs_cnt, age, a_team_matches) = row
+         phys, shoot, tech, def_sc, ovr, ci, diff, p90_g, played_m,
+         cs_cnt, age, a_team_matches, senior_minutes, comp_factor,
+         total_goals, starter_ratio) = row
 
         player_id_to_idx[pid] = idx
         idx_to_player_id[idx] = pid
@@ -69,6 +75,9 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             player_license_to_idx[str(lic).strip()] = idx
 
         age = float(age) if age else 24.0
+        a_team_matches = int(a_team_matches or 0)
+        senior_minutes = int(senior_minutes or 0)
+        comp_factor = float(comp_factor or 0.5)
 
         # One-hot position
         is_gk = 1.0 if pos_cat == 'GK' else 0.0
@@ -77,6 +86,7 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         is_fw = 1.0 if pos_cat == 'FW' else 0.0
 
         # Normalized features (16 dimensions)
+        # Note: Slot 15 encodes Competition Factor / Senior Provenness
         feat = [
             phys / 100.0,
             shoot / 100.0,
@@ -85,12 +95,12 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             ovr / 100.0,
             float(np.clip((age - 15.0) / 25.0, 0.0, 1.0)),
             is_gk, is_df, is_mf, is_fw,
-            float(np.clip(p90_g / 1.5, 0.0, 1.0)),
+            float(np.clip(p90_g / 1.2, 0.0, 1.0)),
             float(np.clip(ci, 0.0, 1.0)),
-            float(np.clip((diff + 5.0) / 10.0, 0.0, 1.0)),
-            float(np.clip(played_m / 80.0, 0.0, 1.0)),
+            float(np.clip((diff + 4.0) / 8.0, 0.0, 1.0)),
+            float(np.clip(a_team_matches / 50.0, 0.0, 1.0)),
             float(np.clip(cs_cnt / 15.0, 0.0, 1.0)),
-            1.0 if age <= 21.0 else 0.0
+            float(np.clip(comp_factor, 0.0, 1.0))
         ]
         player_features.append(feat)
 
@@ -100,22 +110,27 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             'name': name,
             'club_name': club,
             'age': int(age),
-            'pos_cat': pos_cat,
-            'prim_pos': prim_pos,
+            'pos_cat': pos_cat or 'MF',
+            'prim_pos': prim_pos or 'Orta Saha',
             'ovr': round(float(ovr), 1),
             'phys': round(float(phys), 1),
             'shoot': round(float(shoot), 1),
             'tech': round(float(tech), 1),
             'def': round(float(def_sc), 1),
+            'ci': round(float(ci), 2),
+            'starter_ratio': round(float(starter_ratio), 2),
             'diff': round(float(diff), 2),
             'p90_goals': round(float(p90_g), 2),
+            'total_goals': int(total_goals or 0),
             'played_matches': int(played_m),
             'is_youth': bool(age <= 21.0),
-            'a_team_matches': int(a_team_matches)
+            'a_team_matches': a_team_matches,
+            'senior_minutes': senior_minutes,
+            'competition_factor': round(comp_factor, 3)
         }
 
     # ==========================================
-    # 2. CLUBS & SQUAD METRICS EXTRACTION
+    # 2. CLUBS & SENIOR A-TEAM SQUAD METRICS
     # ==========================================
     cur.execute('''
         SELECT id, name, league_name, city, stadium_name
@@ -143,7 +158,7 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             'is_super_lig': bool('Süper' in str(cleague) or 'Super' in str(cleague))
         }
 
-    # Aggregate squad metrics per club
+    # Aggregate SENIOR A-Team squad metrics per club (only players with >= 3 A-Team matches)
     cur.execute('''
         SELECT 
             p.current_club,
@@ -159,29 +174,34 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             SUM(CASE WHEN p.position_category = 'FW' THEN 1 ELSE 0 END) as fw_cnt
         FROM players p
         JOIN player_skills s ON p.id = s.player_id
+        WHERE s.a_team_matches >= 3
         GROUP BY p.current_club
     ''')
     squad_stats = {r[0].strip(): r[1:] for r in cur.fetchall() if r[0]}
 
-    # Match goals aggregated per club
+    # SENIOR A-Team match goals aggregated per club (exclude A2 and U17 matches!)
     cur.execute('''
         SELECT home_club, SUM(home_score) as scored, SUM(away_score) as conceded, COUNT(*) as matches
-        FROM matches WHERE status = 'played' GROUP BY home_club
+        FROM matches 
+        WHERE status = 'played' AND league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
+        GROUP BY home_club
     ''')
-    home_matches = {r[0].strip(): (r[1], r[2], r[3]) for r in cur.fetchall() if r[0]}
+    home_matches = {r[0].strip(): (r[1] or 0, r[2] or 0, r[3] or 0) for r in cur.fetchall() if r[0]}
 
     cur.execute('''
         SELECT away_club, SUM(away_score) as scored, SUM(home_score) as conceded, COUNT(*) as matches
-        FROM matches WHERE status = 'played' GROUP BY away_club
+        FROM matches 
+        WHERE status = 'played' AND league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
+        GROUP BY away_club
     ''')
-    away_matches = {r[0].strip(): (r[1], r[2], r[3]) for r in cur.fetchall() if r[0]}
+    away_matches = {r[0].strip(): (r[1] or 0, r[2] or 0, r[3] or 0) for r in cur.fetchall() if r[0]}
 
     club_features = []
     for idx in range(len(raw_clubs)):
         cname = club_metadata[idx]['name']
         is_super = 1.0 if club_metadata[idx]['is_super_lig'] else 0.0
 
-        sq = squad_stats.get(cname, (20, 65.0, 65.0, 55.0, 63.0, 65.0, 2, 6, 8, 4))
+        sq = squad_stats.get(cname, (20, 64.0, 64.0, 55.0, 61.0, 64.0, 2, 6, 8, 4))
         (sq_size, avg_ovr, avg_phys, avg_shoot, avg_tech, avg_def, gk_c, df_c, mf_c, fw_c) = sq
         sq_size = max(1, sq_size)
 
@@ -192,11 +212,11 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         goals_against_p90 = (hm[1] + am[1]) / total_m
 
         club_metadata[idx].update({
-            'avg_ovr': round(float(avg_ovr or 65.0), 1),
-            'avg_phys': round(float(avg_phys or 65.0), 1),
+            'avg_ovr': round(float(avg_ovr or 64.0), 1),
+            'avg_phys': round(float(avg_phys or 64.0), 1),
             'avg_shoot': round(float(avg_shoot or 55.0), 1),
-            'avg_tech': round(float(avg_tech or 63.0), 1),
-            'avg_def': round(float(avg_def or 65.0), 1),
+            'avg_tech': round(float(avg_tech or 61.0), 1),
+            'avg_def': round(float(avg_def or 64.0), 1),
             'goals_for_p90': round(float(goals_for_p90), 2),
             'goals_against_p90': round(float(goals_against_p90), 2),
             'squad_size': int(sq_size)
@@ -204,11 +224,11 @@ def build_scoutme_graph(db_path='data/ktff.db'):
 
         feat = [
             is_super,
-            (avg_ovr or 65.0) / 100.0,
-            (avg_phys or 65.0) / 100.0,
+            (avg_ovr or 64.0) / 100.0,
+            (avg_phys or 64.0) / 100.0,
             (avg_shoot or 55.0) / 100.0,
-            (avg_tech or 63.0) / 100.0,
-            (avg_def or 65.0) / 100.0,
+            (avg_tech or 61.0) / 100.0,
+            (avg_def or 64.0) / 100.0,
             float(gk_c or 2) / sq_size,
             float(df_c or 6) / sq_size,
             float(mf_c or 8) / sq_size,
@@ -219,7 +239,7 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         club_features.append(feat)
 
     # ==========================================
-    # 3. COACHES EXTRACTION
+    # 3. COACHES EXTRACTION (DATA-DRIVEN FEATURES)
     # ==========================================
     cur.execute('''
         SELECT id, name, role, club_name, nationality, birth_date
@@ -227,6 +247,20 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         ORDER BY id
     ''')
     raw_coaches = cur.fetchall()
+
+    # Compute club-specific youth senior usage ratio (how much A-team minutes U21 players get)
+    club_u21_minutes_share = {}
+    for c_idx, c_meta in club_metadata.items():
+        cname = c_meta['name']
+        tot_s_min = 0
+        u21_s_min = 0
+        for p_meta in player_metadata.values():
+            if (p_meta.get('club_name') or '').strip() == cname:
+                smin = p_meta.get('senior_minutes', 0)
+                tot_s_min += smin
+                if p_meta.get('is_youth', False):
+                    u21_s_min += smin
+        club_u21_minutes_share[c_idx] = (u21_s_min / max(1, tot_s_min)) if tot_s_min > 0 else 0.25
 
     coach_id_to_idx = {}
     idx_to_coach_id = {}
@@ -243,6 +277,10 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         is_super = 1.0 if c_meta.get('is_super_lig', False) else 0.0
         g_for = c_meta.get('goals_for_p90', 1.5)
         g_against = c_meta.get('goals_against_p90', 1.5)
+        u21_pref = float(np.clip(club_u21_minutes_share.get(club_idx, 0.25) * 2.5, 0.20, 0.95))
+        avg_tech_c = c_meta.get('avg_tech', 61.0) / 100.0
+        avg_def_c = c_meta.get('avg_def', 64.0) / 100.0
+        avg_phys_c = c_meta.get('avg_phys', 64.0) / 100.0
 
         coach_metadata[idx] = {
             'coach_id': tid,
@@ -250,17 +288,18 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             'club_name': tclub_clean,
             'club_idx': club_idx,
             'role': trole,
-            'is_super_lig': bool(is_super)
+            'is_super_lig': bool(is_super),
+            'youth_preference': round(u21_pref, 2)
         }
 
         feat = [
             is_super,
             float(np.clip(g_for / 3.0, 0.0, 1.0)),
             float(np.clip(g_against / 3.0, 0.0, 1.0)),
-            0.65,  # youth preference baseline
-            0.70,  # tactical consistency
-            0.50,  # discipline enforcement
-            0.75,  # experience
+            u21_pref,
+            avg_tech_c,
+            avg_def_c,
+            avg_phys_c,
             1.0 if club_idx is not None else 0.0
         ]
         coach_features.append(feat)
@@ -306,25 +345,28 @@ def build_scoutme_graph(db_path='data/ktff.db'):
     # 5. EDGE EXTRACTION (RELATIONAL CONNECTIONS)
     # ==========================================
 
-    # A) Player <-> Club edges (from match lineups + current_club)
+    # A) Player <-> Club edges (prefer Senior A-Team lineups + current_club)
     cur.execute('''
-        SELECT l.license_no, l.club_name, COUNT(*) as match_count, SUM(l.minutes_played) as total_min
+        SELECT l.license_no, l.club_name, m.league_name, COUNT(*) as match_count, SUM(l.minutes_played) as total_min
         FROM match_lineups l
-        WHERE l.license_no IS NOT NULL AND l.club_name IS NOT NULL
-        GROUP BY l.license_no, l.club_name
+        JOIN matches m ON l.match_id = m.id
+        WHERE l.license_no IS NOT NULL AND l.club_name IS NOT NULL AND l.minutes_played > 0
+        GROUP BY l.license_no, l.club_name, m.league_name
     ''')
     lineup_edges = cur.fetchall()
 
     player_club_edges = set()
     player_club_weights = {}
 
-    for lic, cname, cnt, m_sum in lineup_edges:
+    for lic, cname, lname, cnt, m_sum in lineup_edges:
         lic_str = str(lic).strip()
         cname_clean = cname.strip()
         p_idx = player_license_to_idx.get(lic_str)
         c_idx = club_name_to_idx.get(cname_clean)
         if p_idx is not None and c_idx is not None:
-            weight = float(np.log1p(m_sum or (cnt * 60)))
+            is_sen = lname in ('AKSA Süper Lig', 'AKSA 1.Lig')
+            tier_mult = 1.0 if is_sen else 0.35
+            weight = float(np.log1p((m_sum or (cnt * 60)) * tier_mult))
             player_club_edges.add((p_idx, c_idx))
             player_club_weights[(p_idx, c_idx)] = max(player_club_weights.get((p_idx, c_idx), 0.0), weight)
 
@@ -335,7 +377,7 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         if c_idx is not None:
             player_club_edges.add((p_idx, c_idx))
             if (p_idx, c_idx) not in player_club_weights:
-                player_club_weights[(p_idx, c_idx)] = 3.0
+                player_club_weights[(p_idx, c_idx)] = 2.0
 
     # B) Coach <-> Club edges
     coach_club_edges = []
@@ -344,19 +386,45 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         if c_idx is not None:
             coach_club_edges.append((t_idx, c_idx))
 
-    # C) Player <-> Coach edges (through shared club)
-    player_coach_edges = []
+    # C) Player <-> Coach edges (through shared club, plus positive coach_evaluations if any!)
+    player_coach_edges = set()
     for (p_idx, c_idx) in player_club_edges:
         for t_idx, c_edge_idx in coach_club_edges:
             if c_idx == c_edge_idx:
-                player_coach_edges.append((p_idx, t_idx))
+                player_coach_edges.add((p_idx, t_idx))
 
-    # D) Player <-> Player (Teammate co-occurrence in match lineups)
+    # Incorporate Human-in-the-Loop (HITL) positive coach evaluations as direct graph edges
+    try:
+        cur.execute('''
+            SELECT coach_name, club_name, player_id, decision, tactical_fit_rating
+            FROM coach_evaluations
+        ''')
+        eval_rows = cur.fetchall()
+        coach_name_to_idx = {m['name'].strip().upper(): idx for idx, m in coach_metadata.items()}
+        for c_name, cl_name, pid, dec, tf_rating in eval_rows:
+            p_idx = player_id_to_idx.get(pid)
+            if p_idx is None:
+                continue
+            is_pos = ('Evet' in str(dec) or 'Takip' in str(dec) or (tf_rating and tf_rating >= 4))
+            if is_pos:
+                c_idx = club_name_to_idx.get((cl_name or '').strip())
+                if c_idx is not None:
+                    player_club_edges.add((p_idx, c_idx))
+                t_idx = coach_name_to_idx.get((c_name or '').strip().upper())
+                if t_idx is not None:
+                    player_coach_edges.add((p_idx, t_idx))
+    except sqlite3.OperationalError:
+        pass
+
+    player_coach_edges = list(player_coach_edges)
+
+    # D) Player <-> Player (Teammate co-occurrence in SENIOR match lineups)
     cur.execute('''
         SELECT l.match_id, l.club_name, p.id as player_id
         FROM match_lineups l
+        JOIN matches m ON l.match_id = m.id
         JOIN players p ON l.license_no = p.license_no
-        WHERE l.minutes_played > 0
+        WHERE l.minutes_played > 0 AND m.league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
     ''')
     lineup_p_rows = cur.fetchall()
     match_club_players = defaultdict(list)
@@ -373,32 +441,36 @@ def build_scoutme_graph(db_path='data/ktff.db'):
                 u, v = sorted((p_list[i], p_list[j]))
                 teammate_co_counts[(u, v)] += 1
 
-    # Keep strong teammate bonds (played together >= 4 matches)
+    # Keep strong Senior teammate bonds (played together >= 3 Senior matches)
     player_teammate_edges = []
     for (u, v), co_c in teammate_co_counts.items():
-        if co_c >= 4:
+        if co_c >= 3:
             player_teammate_edges.append((u, v))
             player_teammate_edges.append((v, u))
 
-    # E) Scout <-> Player edges (Qualitative Archetype Assignment)
+    # E) Scout <-> Player edges (Competition-Aware Qualitative Archetype Assignment)
     scout_player_edges = []
     for p_idx, p_meta in player_metadata.items():
-        # Scout 1 (Offensive): High shoot or striker with good goals
-        if p_meta['shoot'] >= 72.0 or (p_meta['pos_cat'] == 'FW' and p_meta['p90_goals'] >= 0.35):
+        is_sen_proven = p_meta['a_team_matches'] >= 5
+        # Scout 1 (Offensive): Proven senior high shoot or striker with good goals
+        if is_sen_proven and (p_meta['shoot'] >= 72.0 or (p_meta['pos_cat'] == 'FW' and p_meta['p90_goals'] >= 0.30)):
             scout_player_edges.append((0, p_idx))
-        # Scout 2 (Playmaker): High tech or positive differential
-        if p_meta['tech'] >= 72.0 or (p_meta['pos_cat'] == 'MF' and p_meta['diff'] >= 1.0):
+        # Scout 2 (Playmaker): Proven senior high tech or positive differential
+        if is_sen_proven and (p_meta['tech'] >= 70.0 or (p_meta['pos_cat'] == 'MF' and p_meta['diff'] >= 0.8)):
             scout_player_edges.append((1, p_idx))
-        # Scout 3 (Defensive): High def or solid center back
-        if p_meta['def'] >= 75.0 or (p_meta['pos_cat'] in ('DF', 'GK') and p_meta['ovr'] >= 70.0):
+        # Scout 3 (Defensive): Proven senior high def or solid center back
+        if is_sen_proven and (p_meta['def'] >= 74.0 or (p_meta['pos_cat'] in ('DF', 'GK') and p_meta['ovr'] >= 68.0)):
             scout_player_edges.append((2, p_idx))
-        # Scout 4 (Youth): Age <= 21 with active participation
-        if p_meta['is_youth'] and p_meta['ovr'] >= 55.0:
+        # Scout 4 (Youth): Age <= 21 with promising rating or A-Team minutes
+        if p_meta['is_youth'] and (p_meta['a_team_matches'] >= 2 or p_meta['ovr'] >= 56.0):
             scout_player_edges.append((3, p_idx))
 
     conn.close()
 
     # Convert to PyTorch Tensors
+    pc_list = list(player_club_edges)
+    pc_weights = [player_club_weights.get(edge, 1.0) for edge in pc_list]
+
     graph_data = {
         'x_player': torch.tensor(player_features, dtype=torch.float32),
         'x_club': torch.tensor(club_features, dtype=torch.float32),
@@ -406,8 +478,9 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         'x_scout': torch.tensor(scout_features, dtype=torch.float32),
 
         # Edge indices [2, E]
-        'edge_player_club': torch.tensor(list(player_club_edges), dtype=torch.long).t().contiguous() if player_club_edges else torch.zeros((2, 0), dtype=torch.long),
-        'edge_club_player': torch.tensor([(c, p) for (p, c) in player_club_edges], dtype=torch.long).t().contiguous() if player_club_edges else torch.zeros((2, 0), dtype=torch.long),
+        'edge_player_club': torch.tensor(pc_list, dtype=torch.long).t().contiguous() if pc_list else torch.zeros((2, 0), dtype=torch.long),
+        'edge_club_player': torch.tensor([(c, p) for (p, c) in pc_list], dtype=torch.long).t().contiguous() if pc_list else torch.zeros((2, 0), dtype=torch.long),
+        'edge_player_club_weight': torch.tensor(pc_weights, dtype=torch.float32) if pc_weights else torch.zeros((0,), dtype=torch.float32),
 
         'edge_coach_club': torch.tensor(coach_club_edges, dtype=torch.long).t().contiguous() if coach_club_edges else torch.zeros((2, 0), dtype=torch.long),
         'edge_club_coach': torch.tensor([(c, t) for (t, c) in coach_club_edges], dtype=torch.long).t().contiguous() if coach_club_edges else torch.zeros((2, 0), dtype=torch.long),

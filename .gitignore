@@ -4,7 +4,7 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
-.streamlit/
+.streamlit/secrets.toml
 *.log
 
 # Environments

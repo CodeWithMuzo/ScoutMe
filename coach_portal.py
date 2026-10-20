@@ -1,18 +1,16 @@
 """
-ScoutMe - Antrenör & Scout Özel Değerlendirme Portalı
-===================================================
-A Takım Teknik Direktörleri ve Scoutlar İçin Sadeleştirilmiş,
-Adım Adım Taktiksel Transfer Keşif ve Model Doğrulama Arayüzü.
+ScoutMe - Antrenör & Scout Özel Değerlendirme Portalı (Swiss Pitch Minimal)
+==========================================================================
+Stitch MCP "Swiss Pitch Minimal" Tasarım Sistemi (Siyah & Beyaz Monokrom)
+ile Sadeleştirilmiş Taktiksel Transfer Keşif ve Model Doğrulama Arayüzü.
 
-Akış:
-1. Antrenör ve Kulüp Seçimi
-2. Tercih Edilen Taktiksel Diziliş
-3. Aranan Pozisyon ve Oyuncu Arketipi (Tipi)
-4. Modelin Kart Şeklinde Fotoğraflı Önerileri
-5. "Futbolcuyu Tanıyor musunuz?" Doğrulama Akışı
-   - Evet -> Doğrudan Puanlama
-   - Hayır -> Kariyer ve Performans Bilgi Kartı -> Puanlama
-6. SQLite coach_evaluations Tablosuna Kayıt & Canlı İsabet Raporu
+Tasarım Spesifikasyonu (Stitch Asset: assets/cff8c06daa384d6da7d971ba084df414):
+- Zemin (Canvas Base): #FFFFFF (Saf Beyaz)
+- Yapısal Yüzeyler (Surfaces): #FAFAFA, #F4F4F5
+- İnce Çizgiler (Hairlines): 1px solid #E4E4E7, #D4D4D8
+- Birincil Mürekkep (Primary Ink): #09090B, #000000 (Keskin Siyah)
+- İkincil Metin (Muted Metadata): #71717A
+- Tipografi: Space Grotesk (Başlıklar, Metrikler, Etiketler) & Inter (Gövde)
 """
 
 import sqlite3
@@ -24,144 +22,434 @@ import plotly.express as px
 from recommender.recommender_engine import ScoutMeRecommender, normalize_text
 
 # =============================================================================
-# SAYFA VE STİL YAPILANDIRMASI
+# SAYFA VE STITCH "SWISS PITCH MINIMAL" STİL YAPILANDIRMASI
 # =============================================================================
 st.set_page_config(
-    page_title="ScoutMe - Antrenör Değerlendirme Portalı",
+    page_title="SCOUTME // Antrenör Değerlendirme Portalı",
     page_icon="⚽",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom High-End Football UI Styling
 st.markdown("""
 <style>
-    /* Dark Slate & Gold Football Theme */
-    .stApp { background-color: #0b0f19; color: #f1f5f9; }
-    
-    .main-header {
-        background: linear-gradient(135deg, #10172a 0%, #1e293b 100%);
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-    .main-header h1 {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #38bdf8;
-        letter-spacing: -0.5px;
-        margin-bottom: 6px;
-    }
-    .main-header p {
-        color: #94a3b8;
-        font-size: 1.05rem;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+    /* =========================================================================
+       STITCH DESIGN SYSTEM: SWISS PITCH MINIMAL (PURE BLACK & WHITE)
+       ========================================================================= */
+    :root {
+        --bg-canvas: #FFFFFF;
+        --surface-low: #FAFAFA;
+        --surface-mid: #F4F4F5;
+        --border-hairline: #E4E4E7;
+        --border-strong: #D4D4D8;
+        --ink-primary: #09090B;
+        --ink-black: #000000;
+        --ink-secondary: #3F3F46;
+        --ink-muted: #71717A;
     }
 
-    .step-box {
-        background: #131b2e;
-        border: 1px solid #22304d;
-        border-radius: 12px;
-        padding: 18px 22px;
-        margin-bottom: 20px;
+    /* Ana Uygulama Zemini */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background-color: var(--bg-canvas) !important;
+        color: var(--ink-primary) !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
-    .step-title {
-        font-size: 1.15rem;
+
+    [data-testid="stHeader"] {
+        background-color: var(--bg-canvas) !important;
+        border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .block-container {
+        max-width: 1180px !important;
+        padding-top: 2rem !important;
+        padding-bottom: 4rem !important;
+    }
+
+    /* Genel Tipografi Sıfırlama */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Space Grotesk', sans-serif !important;
+        color: var(--ink-primary) !important;
+        letter-spacing: -0.02em;
+    }
+
+    p, span, label, div {
+        color: var(--ink-primary);
+    }
+
+    /* Üst Mimari Başlık (Swiss Header) */
+    .swiss-header {
+        background: var(--bg-canvas);
+        border-top: 3px solid var(--ink-black);
+        border-bottom: 1px solid var(--border-hairline);
+        padding: 20px 0 18px 0;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .swiss-brand-tag {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--ink-muted);
+        margin-bottom: 4px;
+    }
+    .swiss-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.85rem;
         font-weight: 700;
-        color: #f8fafc;
-        margin-bottom: 12px;
+        color: var(--ink-black);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 1.15;
+    }
+    .swiss-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.88rem;
+        color: var(--ink-muted);
+        margin-top: 4px;
+    }
+    .swiss-meta-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: var(--surface-mid);
+        color: var(--ink-primary);
+        border: 1px solid var(--border-hairline);
+        padding: 6px 12px;
+    }
+
+    /* Bölüm Başlıkları */
+    .section-header {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--ink-black);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--ink-black);
+        margin-bottom: 16px;
+        margin-top: 8px;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 8px;
+    }
+    .section-header span.step-num {
+        background: var(--ink-black);
+        color: #FFFFFF;
+        padding: 2px 7px;
+        font-size: 0.68rem;
+        margin-right: 8px;
     }
 
-    /* Player Card Styling */
-    .player-card {
-        background: #131b2e;
-        border: 1px solid #22304d;
-        border-radius: 14px;
-        padding: 22px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-        transition: border-color 0.2s;
+    /* Streamlit Form ve Girdi Kontrolleri (Monokrom) */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="base-input"] {
+        background-color: var(--bg-canvas) !important;
+        border: 1px solid var(--border-strong) !important;
+        border-radius: 0px !important;
+        color: var(--ink-primary) !important;
+        box-shadow: none !important;
     }
-    .player-card:hover {
-        border-color: #38bdf8;
+    div[data-baseweb="select"] > div:focus-within,
+    div[data-baseweb="input"] > div:focus-within {
+        border-color: var(--ink-black) !important;
+    }
+    div[data-baseweb="select"] span,
+    input[type="text"] {
+        color: var(--ink-primary) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.9rem !important;
     }
 
-    .player-photo-container {
-        width: 130px;
-        height: 160px;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 2px solid #334155;
-        background: #1e293b;
+    /* Açılır Menü Listesi */
+    ul[data-testid="stSelectboxVirtualDropdown"],
+    div[data-baseweb="popover"] {
+        background-color: var(--bg-canvas) !important;
+        border: 1px solid var(--ink-black) !important;
+        border-radius: 0px !important;
+    }
+    li[role="option"] {
+        background-color: var(--bg-canvas) !important;
+        color: var(--ink-primary) !important;
+    }
+    li[role="option"]:hover, li[aria-selected="true"] {
+        background-color: var(--surface-mid) !important;
+        color: var(--ink-black) !important;
+        font-weight: 600;
+    }
+
+    /* Etiketler (Labels) */
+    [data-testid="stWidgetLabel"] p {
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.06em !important;
+        color: var(--ink-secondary) !important;
+    }
+
+    /* Butonlar (Keskin Siyah & Beyaz) */
+    .stButton > button,
+    .stFormSubmitButton > button,
+    .stDownloadButton > button {
+        background-color: var(--ink-black) !important;
+        color: #FFFFFF !important;
+        border: 1px solid var(--ink-black) !important;
+        border-radius: 0px !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        padding: 0.65rem 1.25rem !important;
+        transition: all 0.15s ease !important;
+        box-shadow: none !important;
+    }
+    .stButton > button p,
+    .stFormSubmitButton > button p,
+    .stDownloadButton > button p {
+        color: #FFFFFF !important;
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-weight: 600 !important;
+    }
+    .stButton > button:hover,
+    .stFormSubmitButton > button:hover,
+    .stDownloadButton > button:hover {
+        background-color: #27272A !important;
+        border-color: #27272A !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Sekmeler (Tabs) */
+    button[data-baseweb="tab"] {
+        font-family: 'Space Grotesk', sans-serif !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.06em !important;
+        color: var(--ink-muted) !important;
+        padding: 10px 20px !important;
+        border-radius: 0px !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: var(--ink-black) !important;
+        background-color: var(--surface-low) !important;
+        border-bottom: 2px solid var(--ink-black) !important;
+    }
+    div[data-baseweb="tab-highlight"] {
+        background-color: var(--ink-black) !important;
+    }
+
+    /* Expander ve Form Konteynerleri */
+    [data-testid="stExpander"] {
+        background-color: var(--surface-low) !important;
+        border: 1px solid var(--border-hairline) !important;
+        border-radius: 0px !important;
+    }
+    [data-testid="stForm"] {
+        background-color: var(--surface-low) !important;
+        border: 1px solid var(--border-hairline) !important;
+        border-radius: 0px !important;
+        padding: 18px !important;
+    }
+
+    /* Oyuncu Kartı (Swiss Monochrome Card) */
+    .swiss-card-header {
+        background: var(--surface-low);
+        border: 1px solid var(--border-hairline);
+        border-top: 2px solid var(--ink-black);
+        padding: 14px 18px;
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+    .swiss-rank-tag {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: var(--ink-black);
+        color: #FFFFFF;
+        padding: 4px 9px;
+    }
+    .swiss-player-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ink-black);
+        letter-spacing: -0.02em;
+        margin: 0 10px;
+    }
+    .swiss-pos-tag {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--border-strong);
+        background: #FFFFFF;
+        color: var(--ink-secondary);
+        padding: 3px 8px;
+    }
+    .swiss-ovr-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: var(--ink-black);
+        color: #FFFFFF;
+        padding: 5px 12px;
+        letter-spacing: -0.01em;
+    }
+    .swiss-fit-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        background: #FFFFFF;
+        color: var(--ink-black);
+        border: 1px solid var(--ink-black);
+        padding: 4px 10px;
+    }
+
+    /* Fotoğraf Çerçevesi */
+    .swiss-photo-box {
+        width: 115px;
+        height: 142px;
+        border: 1px solid var(--border-strong);
+        background: var(--surface-low);
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
     }
-    .player-photo {
+    .swiss-photo-box img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        filter: grayscale(100%) contrast(1.08);
     }
-    .player-photo-placeholder {
-        font-size: 3.5rem;
-        color: #64748b;
-    }
-
-    .badge-ovr {
-        background: #2563eb;
-        color: #ffffff;
-        font-weight: 800;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 1rem;
-    }
-    .badge-pos {
-        background: #334155;
-        color: #f1f5f9;
+    .swiss-photo-initials {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.6rem;
         font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.82rem;
-    }
-    .badge-fit {
-        background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        color: #34d399;
-        font-weight: 800;
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 1.15rem;
+        color: var(--ink-muted);
     }
 
-    .career-box {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid #3b82f6;
-        border-radius: 10px;
-        padding: 16px;
-        margin-top: 15px;
-        margin-bottom: 15px;
+    /* Yatay Beceri Çubukları (Monochrome Attribute Matrix) */
+    .skill-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin: 12px 0;
     }
-    .career-title {
-        color: #38bdf8;
-        font-weight: 700;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+    .skill-cell {
+        background: var(--surface-low);
+        border: 1px solid var(--border-hairline);
+        padding: 8px 10px;
     }
-
-    .saved-box {
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-top: 15px;
-        color: #6ee7b7;
+    .skill-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 6px;
+    }
+    .skill-label {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.68rem;
         font-weight: 600;
-        font-size: 0.92rem;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--ink-muted);
+    }
+    .skill-val {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ink-black);
+        font-variant-numeric: tabular-nums;
+    }
+    .skill-track {
+        width: 100%;
+        height: 4px;
+        background: var(--border-hairline);
+    }
+    .skill-fill {
+        height: 100%;
+        background: var(--ink-black);
+    }
+
+    /* Scout Raporu Not Kutusu */
+    .swiss-verdict-box {
+        background: var(--surface-low);
+        border-left: 2px solid var(--ink-black);
+        padding: 10px 14px;
+        font-size: 0.86rem;
+        color: var(--ink-secondary);
+        margin-top: 8px;
+    }
+
+    /* Kariyer Bilgi Kartı */
+    .swiss-career-sheet {
+        background: var(--surface-low);
+        border: 1px solid var(--ink-black);
+        padding: 14px 18px;
+        margin: 12px 0;
+    }
+    .swiss-career-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-black);
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--border-hairline);
+        padding-bottom: 6px;
+    }
+
+    /* KPI Kutuları */
+    .swiss-kpi {
+        background: var(--surface-low);
+        border: 1px solid var(--border-hairline);
+        border-top: 2px solid var(--ink-black);
+        padding: 16px;
+    }
+    .swiss-kpi-label {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-muted);
+    }
+    .swiss-kpi-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--ink-black);
+        margin-top: 4px;
+        font-variant-numeric: tabular-nums;
+    }
+    .swiss-kpi-sub {
+        font-size: 0.76rem;
+        color: var(--ink-muted);
+        margin-top: 2px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -198,7 +486,6 @@ def get_player_full_details(player_id):
     ''', (player_id,))
     row = cur.fetchone()
     
-    # Season stats
     seasons = cur.execute('''
         SELECT season, total_played_matches, starter_matches, goals, yellow_cards, red_cards
         FROM player_season_stats
@@ -243,38 +530,45 @@ coaches_df, clubs_df = get_coaches_and_clubs()
 
 
 # =============================================================================
-# BAŞLIK VE ÜST BİLGİ
+# MİMARİ ÜST BAŞLIK (SWISS PITCH MINIMAL HEADER)
 # =============================================================================
 st.markdown("""
-<div class="main-header">
-    <h1>⚽ SCOUTME | ANTRENÖR TRANSFER DOĞRULAMA PORTALI</h1>
-    <p>A Takım Teknik Direktörleri İçin Taktiksel Oyuncu Keşfi & Yapay Zeka Model Değerlendirme Sistemi</p>
+<div class="swiss-header">
+    <div>
+        <div class="swiss-brand-tag">SCOUTME // MULTI-STAKEHOLDER RECSYS</div>
+        <h1 class="swiss-title">ANTRENÖR DEĞERLENDİRME PORTALI</h1>
+        <div class="swiss-subtitle">A Takım Teknik Direktörleri İçin Taktiksel Oyuncu Keşif ve Doğrulama Arayüzü</div>
+    </div>
+    <div class="swiss-meta-badge">KTFF 2026–2027 VERİ TABANI</div>
 </div>
 """, unsafe_allow_html=True)
 
-portal_tab1, portal_tab2 = st.tabs(["🎯 Taktiksel Transfer Sihirbazı & Puanlama", "📊 Canlı Model İsabet ve Doğrulama Raporu"])
+portal_tab1, portal_tab2 = st.tabs([
+    "01 // TAKTİKSEL TRANSFER SİHİRBAZI",
+    "02 // DOĞRULAMA METRİKLERİ & İSABET RAPORU"
+])
 
 
 # =============================================================================
-# SEKME 1: 🎯 TAKTİKSEL TRANSFER SİHİRBAZI & PUANLAMA
+# SEKME 1: 01 // TAKTİKSEL TRANSFER SİHİRBAZI
 # =============================================================================
 with portal_tab1:
-    
+
     # -------------------------------------------------------------------------
-    # ADIM 1: ANTRENÖR & KULÜP BİLGİSİ
+    # ADIM 01 & 02: KOMPAKT YAPILANDIRMA IZGARASI
     # -------------------------------------------------------------------------
-    st.markdown('<div class="step-title">👤 ADIM 1: Antrenör ve Kulüp Kimliği</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header"><div><span class="step-num">01</span>ANTRENÖR, KULÜP VE TAKTİKSEL PROFİL SEÇİMİ</div><span>PARAMETRE GİRİŞİ</span></div>', unsafe_allow_html=True)
+
     c_col1, c_col2 = st.columns(2)
-    
     coach_list = sorted(list(coaches_df['name'].unique()))
     with c_col1:
         selected_coach = st.selectbox(
-            "Adınız ve Soyadınız (Teknik Direktör Listesi):",
+            "TEKNİK DİREKTÖR / DEĞERLENDİRİCİ",
             ["Misafir Antrenör / Scout"] + coach_list,
             index=coach_list.index("ERDİNÇ BÖREKÇİ") + 1 if "ERDİNÇ BÖREKÇİ" in coach_list else 0
         )
         if selected_coach == "Misafir Antrenör / Scout":
-            coach_display_name = st.text_input("Antrenör Adınız:", value="Misafir Teknik Direktör")
+            coach_display_name = st.text_input("ADINIZ VE SOYADINIZ", value="Misafir Teknik Direktör")
         else:
             coach_display_name = selected_coach
 
@@ -287,23 +581,15 @@ with portal_tab1:
 
     with c_col2:
         selected_club = st.selectbox(
-            "Çalıştırdığınız / Temsil Ettiğiniz Kulüp:",
+            "KULÜP",
             club_names,
             index=default_club_idx
         )
 
-    st.write("---")
-
-    # -------------------------------------------------------------------------
-    # ADIM 2 & 3: DİZİLİŞ & OYUNCU TİPİ SEÇİMİ
-    # -------------------------------------------------------------------------
-    st.markdown('<div class="step-title">📐 ADIM 2: Tercih Ettiğiniz Diziliş ve Aradığınız Oyuncu Profili</div>', unsafe_allow_html=True)
-    
     col_d1, col_d2, col_d3 = st.columns(3)
-    
     with col_d1:
         selected_formation = st.selectbox(
-            "Oyun Şablonunuz / Dizilişiniz:",
+            "TAKTİK DİZİLİŞ",
             [
                 "4-3-3 (Geniş Kanatlar & Tek Forvet)",
                 "4-2-3-1 (Çift Ön Libero & 10 Numara)",
@@ -326,10 +612,9 @@ with portal_tab1:
             "Bek / Kanat Bek (LB/RB)": "DF",
             "Kaleci (GK)": "GK"
         }
-        selected_pos_label = st.selectbox("Aradığınız Pozisyon:", list(pos_options.keys()), index=0)
+        selected_pos_label = st.selectbox("ARANAN MEVKİ", list(pos_options.keys()), index=0)
         target_pos_cat = pos_options[selected_pos_label]
 
-    # Archetype types based on position
     archetype_map = {
         "Santrafor / Forvet (FW)": [
             "Hedef Santrafor (Fizik Güç & Hava Hakimiyeti)",
@@ -343,7 +628,7 @@ with portal_tab1:
             "Pres Gücü Yüksek Çalışkan Kanat"
         ],
         "Merkez / Ofansif Orta Saha (CM/CAM)": [
-            "Oyun Kurucu / Metronom (Yüksek Pas & Pozitif Skor Katkısı)",
+            "Oyun Kurucu / Metronom (Yüksek Pas & Skor Katkısı)",
             "İki Yönlü Dinamo (Box-to-Box)",
             "Yaratıcı 10 Numara / Asistçi"
         ],
@@ -368,32 +653,37 @@ with portal_tab1:
 
     with col_d3:
         archetypes = archetype_map.get(selected_pos_label, ["Dengeli Oyuncu"])
-        selected_archetype = st.selectbox("Aradığınız Oyuncu Tipi (Arketip):", archetypes, index=0)
+        selected_archetype = st.selectbox("OYUNCU ARKETİPİ", archetypes, index=0)
 
-    # Optional filter: Underdog slider
-    with st.expander("⚙️ Gelişmiş Filtreler (Gizli Cevher & Yaş Sınırı)", expanded=False):
+    with st.expander("GELİŞMİŞ FİLTRELER (GİZLİ YETENEK KATSAYISI & U21 FİLTRESİ)", expanded=False):
         col_f1, col_f2 = st.columns(2)
         with col_f1:
-            lambda_val = st.slider("Popülarite Cezası (λ) — Gizli Yetenek Arama:", min_value=0.0, max_value=0.50, value=0.20, step=0.05,
-                                   help="Yüksek λ değeri tanınmış yıldızlar yerine alt ligdeki yüksek potansiyelli ucuz cevherleri öne çıkarır.")
+            lambda_val = st.slider(
+                "POPÜLARİTE CEZASI (λ)",
+                min_value=0.0, max_value=0.50, value=0.20, step=0.05,
+                help="Yüksek λ değeri tanınmış oyuncular yerine alt ligdeki yüksek potansiyelli oyuncuları öne çıkarır."
+            )
         with col_f2:
-            youth_filter = st.checkbox("Sadece Genç Yetenekler (Yaş ≤ 21)", value=False)
+            st.write("")
+            youth_filter = st.checkbox("YALNIZCA U21 GENÇ YETENEKLERİ LİSTELE (YAŞ ≤ 21)", value=False)
 
-    st.write("")
-    run_btn = st.button("🚀 Taktiksel Oyuncu Önerilerini Getir", type="primary", use_container_width=True)
+    run_btn = st.button("TAKTİKSEL OYUNCU ÖNERİLERİNİ LİSTELE →", type="primary", use_container_width=True)
 
     # =========================================================================
-    # ADIM 4 & 5: ÖNERİLER VE İNTERAKTİF DOĞRULAMA AKIŞI
+    # ADIM 02: ÖNERİ KARTLARI VE DOĞRULAMA AKIŞI
     # =========================================================================
     if run_btn or 'portal_recs' in st.session_state:
         if run_btn:
-            # Generate recommendations
             recs = recommender.recommend_players_for_club(
                 selected_club,
                 target_position=target_pos_cat,
                 top_k=4,
                 lambda_popularity=lambda_val,
-                youth_only=youth_filter
+                youth_only=youth_filter,
+                formation=formation_clean,
+                sub_position_label=selected_pos_label,
+                player_archetype=selected_archetype,
+                coach_identifier=coach_display_name
             )
             st.session_state['portal_recs'] = recs
             st.session_state['portal_club'] = selected_club
@@ -403,161 +693,169 @@ with portal_tab1:
             st.session_state['portal_archetype'] = selected_archetype
 
         recs = st.session_state.get('portal_recs', [])
-        
-        st.write("---")
-        st.markdown(f"### 📋 {st.session_state.get('portal_club')} İçin {selected_archetype} Profilli Öneriler")
-        st.info("💡 **Antrenör Yönergesi:** Her oyuncuyu inceleyin. Önce futbolcuyu **tanıyıp tanımadığınızı** belirtin. Tanımıyorsanız sistem size oyuncunun kariyer geçmişini özetleyecektir. Ardından modelin önerisini puanlayınız.")
+
+        st.markdown(
+            f'<div class="section-header" style="margin-top:28px;">'
+            f'<div><span class="step-num">02</span>{st.session_state.get("portal_club")} // ÖNERİLEN ADAYLAR ({len(recs)})</div>'
+            f'<span>{st.session_state.get("portal_formation")} • {st.session_state.get("portal_archetype")}</span>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
         for idx, p in enumerate(recs, 1):
             p_full, p_seasons = get_player_full_details(p['player_id'])
-            
             photo_url = p_full[4] if (p_full and len(p_full) > 4 and p_full[4]) else None
-            
-            st.markdown(f'<div class="player-card">', unsafe_allow_html=True)
-            
-            # Card Top Row
-            row_c1, row_c2, row_c3 = st.columns([2, 5, 3])
-            
-            with row_c1:
+            initials = "".join([w[0] for w in p['name'].split()[:2]]) if p['name'] else "OY"
+
+            # Kart Üst Şeridi
+            st.markdown(f"""
+            <div class="swiss-card-header">
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+                    <span class="swiss-rank-tag">ADAY #{idx:02d}</span>
+                    <span class="swiss-player-name">{p['name']}</span>
+                    <span class="swiss-pos-tag">{p['prim_pos']}</span>
+                    <span style="font-size:0.78rem; color:#71717A; margin-left:6px;">LİSANS #{p['license_no']}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="swiss-fit-badge">UYUM %{p['tactical_fit_pct']}</span>
+                    <span class="swiss-pos-tag">İLK 11 ŞANSI %{p['playing_time_chance_pct']}</span>
+                    <span class="swiss-ovr-badge">{p['ovr']} OVR</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Kart Gövdesi
+            body_c1, body_c2 = st.columns([1.4, 8.6])
+            with body_c1:
                 if photo_url:
-                    st.image(photo_url, width=125, caption=f"KTFF Lisans #{p['license_no']}")
-                else:
-                    st.markdown("""
-                    <div class="player-photo-container">
-                        <div class="player-photo-placeholder">👤</div>
+                    st.markdown(f"""
+                    <div class="swiss-photo-box">
+                        <img src="{photo_url}" alt="{p['name']}" />
                     </div>
                     """, unsafe_allow_html=True)
-                    st.caption(f"KTFF #{p['license_no']}")
+                else:
+                    st.markdown(f"""
+                    <div class="swiss-photo-box">
+                        <div class="swiss-photo-initials">{initials}</div>
+                        <div style="font-size:0.65rem; color:#71717A; margin-top:4px;">#{p['license_no']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-            with row_c2:
+            with body_c2:
+                tags_html = " &bull; ".join([f"<span style='font-family:Space Grotesk; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; border:1px solid #D4D4D8; padding:2px 6px; background:#FAFAFA;'>{t}</span>" for t in p.get('scout_tags', [])])
                 st.markdown(f"""
-                <div>
-                    <span class="badge-ovr">{p['ovr']} OVR</span>
-                    <span class="badge-pos">{p['prim_pos']}</span>
-                    <span style="color:#94a3b8; font-size:0.85rem; margin-left:8px;">#{idx} Sıradaki Öneri</span>
+                <div style="font-size:0.86rem; color:#3F3F46; margin-bottom:6px; display:flex; justify-content:space-between; flex-wrap:wrap;">
+                    <div><strong>{p['age']} YAŞ</strong> &nbsp;|&nbsp; KULÜP: <strong>{p['current_club']}</strong> &nbsp;|&nbsp; A-TAKIM MAÇ: <strong>{p.get('a_team_matches', 0)}</strong> <span style="color:#71717A;">(Toplam: {p['played_matches']})</span></div>
+                    <div>{tags_html}</div>
                 </div>
-                <h3 style="color:#ffffff; margin: 4px 0;">{p['name']}</h3>
-                <div style="font-size:0.92rem; color:#94a3b8;">
-                    <strong>{p['age']} Yaş</strong> &bull; Mevcut Kulüp: <strong style="color:#38bdf8;">{p['current_club']}</strong> &bull; Toplam <strong>{p['played_matches']}</strong> Maç
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 4 Skills meters
-                sk1, sk2, sk3, sk4 = st.columns(4)
-                sk1.metric("Fizik", p['phys'])
-                sk2.metric("Şut", p['shoot'])
-                sk3.metric("Teknik", p['tech'])
-                sk4.metric("Defans", p['def'])
-                
-                st.markdown(f'<div style="font-size:0.85rem; color:#cbd5e1; font-style:italic; margin-top:8px;">🤖 <strong>Model Görüşü:</strong> "{p["scout_verdict"]}"</div>', unsafe_allow_html=True)
-
-            with row_c3:
-                st.markdown(f"""
-                <div style="text-align:right;">
-                    <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase;">Taktiksel Uyum Skoru</div>
-                    <div class="badge-fit" style="display:inline-block; margin-top:4px;">%{p['tactical_fit_pct']}</div>
-                </div>
-                <div style="margin-top:15px; font-size:0.85rem;">
-                    <div style="display:flex; justify-content:space-between; color:#94a3b8;">
-                        <span>İlk 11 Oynama Şansı:</span>
-                        <strong style="color:#34d399;">%{p['playing_time_chance_pct']}</strong>
+                <div class="skill-grid">
+                    <div class="skill-cell">
+                        <div class="skill-top"><span class="skill-label">FİZİKSEL</span><span class="skill-val">{p['phys']:.0f}</span></div>
+                        <div class="skill-track"><div class="skill-fill" style="width:{min(100, max(0, p['phys']))}%;"></div></div>
+                    </div>
+                    <div class="skill-cell">
+                        <div class="skill-top"><span class="skill-label">ŞUT</span><span class="skill-val">{p['shoot']:.0f}</span></div>
+                        <div class="skill-track"><div class="skill-fill" style="width:{min(100, max(0, p['shoot']))}%;"></div></div>
+                    </div>
+                    <div class="skill-cell">
+                        <div class="skill-top"><span class="skill-label">TEKNİK</span><span class="skill-val">{p['tech']:.0f}</span></div>
+                        <div class="skill-track"><div class="skill-fill" style="width:{min(100, max(0, p['tech']))}%;"></div></div>
+                    </div>
+                    <div class="skill-cell">
+                        <div class="skill-top"><span class="skill-label">DEFANS</span><span class="skill-val">{p['def']:.0f}</span></div>
+                        <div class="skill-track"><div class="skill-fill" style="width:{min(100, max(0, p['def']))}%;"></div></div>
                     </div>
                 </div>
+                <div class="swiss-verdict-box">
+                    <strong style="font-family:'Space Grotesk', sans-serif; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.06em; color:#000000;">MODEL GEREKÇESİ //</strong> {p["scout_verdict"]}
+                </div>
                 """, unsafe_allow_html=True)
 
             # -----------------------------------------------------------------
-            # İNTERAKTİF DOĞRULAMA AKIŞI: "BU FUTBOLCUYU TANIYOR MUSUNUZ?"
+            # ADIM 03: BİLİNİRLİK KONTROLÜ & PUANLAMA FORMU
             # -----------------------------------------------------------------
-            st.markdown("<hr style='border-color:#1e293b; margin:15px 0;'>", unsafe_allow_html=True)
-            
-            st.markdown(f"##### ❓ Soru: **{p['name']}** isimli futbolcuyu daha önce ligde izlediniz mi / tanıyor musunuz?")
-            
             knows_key = f"knows_{p['player_id']}_{idx}"
             is_known_choice = st.radio(
-                "Bilgi Düzeyiniz:",
-                ["🟢 Evet, tanıyorum / ligde izledim", "🟡 Hayır, tanımıyorum / ilk defa duyuyorum"],
+                f"{p['name']} İSİMLİ OYUNCUYU DAHA ÖNCE LİGDE İZLEDİNİZ Mİ?",
+                ["Evet, oyuncuyu tanıyorum", "Hayır, tanımıyorum (Kariyer karnesini göster)"],
                 horizontal=True,
                 key=knows_key
             )
             is_known = 1 if "Evet" in is_known_choice else 0
 
-            # EĞER HAYIRSA: KARİYER BİLGİ KARTINI GÖSTER
-            if is_known == 0:
+            if is_known == 0 and p_full:
                 st.markdown(f"""
-                <div class="career-box">
-                    <div class="career-title">📖 {p['name']} — Kariyer & Performans Bilgi Notu</div>
-                    <div style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
-                        • <strong>Doğum Tarihi / Yaş:</strong> {p_full[3]} ({p['age']} Yaşında)<br>
-                        • <strong>Son 3 Sezon Maç Katılımı:</strong> {p_full[13]} Maçta süre aldı (İlk 11 Başlama Oranı: %{p_full[15]*100:.0f}).<br>
-                        • <strong>Skor Katkısı:</strong> Toplam {p_full[14]} gol (90 dk başına {p_full[12]} gol).<br>
-                        • <strong>Saha İçi Net Averaj Katkısı (On-Pitch Diff):</strong> Oyuncu sahadayken takımın net gol katkısı: <strong>+{p_full[11]}</strong><br>
-                        • <strong>Karakteristik Özellik:</strong> Süreklilik endeksi %{p_full[10]*100:.0f} ile maç kondisyonu yüksek bir profil.
+                <div class="swiss-career-sheet">
+                    <div class="swiss-career-title">{p['name']} — RESMİ KTFF PERFORMANS ÖZETİ</div>
+                    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; font-size:0.82rem; color:#3F3F46;">
+                        <div><span style="color:#71717A; font-size:0.72rem; text-transform:uppercase; display:block;">DOĞUM TARİHİ</span><strong>{p_full[3] or '-'} ({p['age']} Yaş)</strong></div>
+                        <div><span style="color:#71717A; font-size:0.72rem; text-transform:uppercase; display:block;">SON 3 SEZON KATILIM</span><strong>{p_full[13]} Maç (İlk 11: %{p_full[15]*100:.0f})</strong></div>
+                        <div><span style="color:#71717A; font-size:0.72rem; text-transform:uppercase; display:block;">SKOR ÜRETİMİ</span><strong>{p_full[14]} Gol ({p_full[12]} Gol/90dk)</strong></div>
+                        <div><span style="color:#71717A; font-size:0.72rem; text-transform:uppercase; display:block;">SAHA İÇİ NET AVERAJ</span><strong>{p_full[11]:+.2f} / 90dk (CI: %{p_full[10]*100:.0f})</strong></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # Season breakdown table
+
                 if p_seasons:
                     season_df = pd.DataFrame(p_seasons, columns=['Sezon', 'Toplam Maç', 'İlk 11', 'Gol', 'Sarı Kart', 'Kırmızı Kart'])
                     st.dataframe(season_df, hide_index=True, use_container_width=True)
 
-            # PUANLAMA FORMU
-            st.markdown(f"##### ⭐ Bu Öneriyi Puanlayın:")
-            
             with st.form(key=f"coach_eval_form_{p['player_id']}_{idx}"):
                 ev_c1, ev_c2, ev_c3 = st.columns(3)
-                
+
                 with ev_c1:
                     eval_tac = st.select_slider(
-                        "1. Taktiksel Uyum (1 - 5 Yıldız):",
+                        "01. TAKTİKSEL UYUM (1–5)",
                         options=[1, 2, 3, 4, 5],
                         value=4,
-                        help="1: Sistemime hiç uymaz, 3: Orta düzey, 5: Sistemime kusursuz uyum sağlar",
                         key=f"f_tac_{p['player_id']}"
                     )
                 with ev_c2:
                     eval_play = st.select_slider(
-                        "2. İlk 11 / Süre Verme İsteği (1 - 5):",
+                        "02. İLK 11 / SÜRE ŞANSI (1–5)",
                         options=[1, 2, 3, 4, 5],
                         value=4,
-                        help="1: Kadroda süre alamaz, 3: Rotasyon oyuncusu, 5: Doğrudan ilk 11 başlar",
                         key=f"f_play_{p['player_id']}"
                     )
                 with ev_c3:
                     eval_feas = st.select_slider(
-                        "3. Transfer Mantığı & Şartlar (1 - 5):",
+                        "03. TRANSFER MANTIĞI (1–5)",
                         options=[1, 2, 3, 4, 5],
                         value=4,
-                        help="1: Mantıksız / Şartlar imkansız, 3: Mümkün, 5: Çok cazip fırsat",
                         key=f"f_feas_{p['player_id']}"
                     )
 
                 eval_dec = st.radio(
-                    "Bu Futbolcu İçin Kararınız:",
+                    "TRANSFER KARARINIZ",
                     [
-                        "🟢 Kesinlikle Alırım (İlk 11 Hedefi)",
-                        "🔵 Rotasyona Alırım (Kadro Derinliği)",
-                        "🟡 Scout İzleme Listesine Alırım",
-                        "🔴 Pas Geçerim / Uygun Değil"
+                        "Kesinlikle Alırım (İlk 11 Hedefi)",
+                        "Rotasyona Alırım (Kadro Derinliği)",
+                        "Scout İzleme Listesine Alırım",
+                        "Pas Geçerim / Uygun Değil"
                     ],
+                    horizontal=True,
                     index=0,
                     key=f"f_dec_{p['player_id']}"
                 )
-                
+
                 dec_val_map = {
-                    "🟢 Kesinlikle Alırım (İlk 11 Hedefi)": "buy",
-                    "🔵 Rotasyona Alırım (Kadro Derinliği)": "rotation",
-                    "🟡 Scout İzleme Listesine Alırım": "watchlist",
-                    "🔴 Pas Geçerim / Uygun Değil": "reject"
+                    "Kesinlikle Alırım (İlk 11 Hedefi)": "buy",
+                    "Rotasyona Alırım (Kadro Derinliği)": "rotation",
+                    "Scout İzleme Listesine Alırım": "watchlist",
+                    "Pas Geçerim / Uygun Değil": "reject"
                 }
 
-                eval_comment = st.text_input(
-                    "Antrenör Olarak Özel Gözleminiz (Opsiyonel):",
-                    placeholder="Örn: Pres gücü çok iyi, forvet arkasında aradığımız dinamizmi sağlar...",
-                    key=f"f_note_{p['player_id']}"
-                )
+                form_b1, form_b2 = st.columns([7, 3])
+                with form_b1:
+                    eval_comment = st.text_input(
+                        "TEKNİK NOT (OPSİYONEL)",
+                        placeholder="Örn: Pres disiplini ve fizik kalitesi sistemimize uygun...",
+                        key=f"f_note_{p['player_id']}"
+                    )
+                with form_b2:
+                    st.write("")
+                    submit_eval = st.form_submit_button("DEĞERLENDİRMEYİ KAYDET →", type="primary", use_container_width=True)
 
-                submit_eval = st.form_submit_button("💾 Değerlendirmeyi Sisteme Kaydet", type="primary")
                 if submit_eval:
                     save_evaluation_to_db(
                         coach_name=st.session_state.get('portal_coach', 'Misafir Antrenör'),
@@ -575,92 +873,126 @@ with portal_tab1:
                         decision=dec_val_map[eval_dec],
                         note=eval_comment
                     )
-                    st.toast(f"✅ {p['name']} için değerlendirmeniz başarıyla kaydedildi!")
-                    st.success(f"Teşekkürler Hocam! **{p['name']}** için verdiğiniz geri bildirim veritabanına işlendi.")
-
-            st.markdown('</div>', unsafe_allow_html=True)
+                    st.toast(f"Kaydedildi: {p['name']}")
+                    st.markdown(
+                        f"<div style='border:1px solid #09090B; background:#FFFFFF; padding:10px 14px; font-size:0.84rem; font-weight:600;'>"
+                        f"✓ {p['name']} için değerlendirmeniz veritabanına kaydedildi.</div>",
+                        unsafe_allow_html=True
+                    )
 
 
 # =============================================================================
-# SEKME 2: 📊 CANLI MODEL İSABETİ & DOĞRULAMA RAPORU
+# SEKME 2: 02 // DOĞRULAMA METRİKLERİ & İSABET RAPORU
 # =============================================================================
 with portal_tab2:
-    st.subheader("📊 Antrenör Geri Bildirimleri & Model İsabet İstatistikleri")
-    st.caption("Teknik direktörlerin verdiği puanlar ve kararlar doğrultusunda modelimizin gerçek dünya isabet analizi.")
-    
+    st.markdown('<div class="section-header"><div><span class="step-num">01</span>SAHA DOĞRULAMA METRİKLERİ (HUMAN-IN-THE-LOOP)</div><span>CANLI VERİTABANI ÖZETİ</span></div>', unsafe_allow_html=True)
+
     all_evals = load_evaluations_summary()
-    
+
     if len(all_evals) == 0:
         st.info("Henüz kaydedilmiş antrenör değerlendirmesi bulunmuyor.")
     else:
-        kpi_c1, kpi_c2, kpi_c3, kpi_c4 = st.columns(4)
-        
         tot_cnt = len(all_evals)
         avg_tac_sc = all_evals['tactical_fit_rating'].mean()
         accepted_cnt = all_evals['decision'].isin(['buy', 'rotation', 'watchlist']).sum()
         acc_rate = (accepted_cnt / tot_cnt) * 100.0
         known_rate = (all_evals['is_known'].sum() / tot_cnt) * 100.0 if 'is_known' in all_evals else 70.0
-        
-        kpi_c1.metric("Toplam Puanlanan Oyuncu", f"{tot_cnt}")
-        kpi_c2.metric("Ortalama Taktik Uyum", f"{avg_tac_sc:.2f} / 5.0", f"%{avg_tac_sc/5*100:.1f} Başarı")
-        kpi_c3.metric("Transfer Kabul Oranı", f"%{acc_rate:.1f}", "Alırım + Rotasyon")
-        kpi_c4.metric("Ligde Bilinirlik Oranı", f"%{known_rate:.1f}", "Tanınan Oyuncular")
 
-        st.write("---")
+        kpi_c1, kpi_c2, kpi_c3, kpi_c4 = st.columns(4)
+        with kpi_c1:
+            st.markdown(f"""
+            <div class="swiss-kpi">
+                <div class="swiss-kpi-label">TOPLAM DEĞERLENDİRME</div>
+                <div class="swiss-kpi-value">{tot_cnt}</div>
+                <div class="swiss-kpi-sub">Kayıtlı Antrenör Oyu</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kpi_c2:
+            st.markdown(f"""
+            <div class="swiss-kpi">
+                <div class="swiss-kpi-label">ORTALAMA TAKTİK UYUM</div>
+                <div class="swiss-kpi-value">{avg_tac_sc:.2f} <span style="font-size:1rem; color:#71717A;">/ 5.0</span></div>
+                <div class="swiss-kpi-sub">%{avg_tac_sc/5*100:.1f} Memnuniyet</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kpi_c3:
+            st.markdown(f"""
+            <div class="swiss-kpi">
+                <div class="swiss-kpi-label">TRANSFER KABUL ORANI</div>
+                <div class="swiss-kpi-value">%{acc_rate:.1f}</div>
+                <div class="swiss-kpi-sub">İlk 11 + Rotasyon + İzleme</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with kpi_c4:
+            st.markdown(f"""
+            <div class="swiss-kpi">
+                <div class="swiss-kpi-label">LİG BİLİNİRLİK ORANI</div>
+                <div class="swiss-kpi-value">%{known_rate:.1f}</div>
+                <div class="swiss-kpi-sub">Tanınan Oyuncu Oranı</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown('<div class="section-header" style="margin-top:28px;"><div><span class="step-num">02</span>KARAR DAĞILIMI VE MODEL KORELASYONU</div><span>MONOKROM ANALİTİK</span></div>', unsafe_allow_html=True)
 
         rep_c1, rep_c2 = st.columns(2)
-        
+
         with rep_c1:
-            st.subheader("🎯 Antrenör Kararlarının Dağılımı")
             dec_label_map = {
                 'buy': 'Kesinlikle Alırım',
                 'rotation': 'Rotasyona Alırım',
                 'watchlist': 'İzleme Listesi',
-                'reject': 'Pas Geçerim'
+                'reject': 'Uygun Değil'
             }
             mapped_dec = all_evals['decision'].map(dec_label_map).value_counts().reset_index()
             mapped_dec.columns = ['Karar', 'Adet']
-            fig_p = px.pie(
-                mapped_dec, values='Adet', names='Karar',
-                hole=0.45,
+            fig_bar = px.bar(
+                mapped_dec, x='Karar', y='Adet', text='Adet',
                 color='Karar',
                 color_discrete_map={
-                    'Kesinlikle Alırım': '#10b981',
-                    'Rotasyona Alırım': '#3b82f6',
-                    'İzleme Listesi': '#f59e0b',
-                    'Pas Geçerim': '#ef4444'
+                    'Kesinlikle Alırım': '#09090B',
+                    'Rotasyona Alırım': '#3F3F46',
+                    'İzleme Listesi': '#71717A',
+                    'Uygun Değil': '#D4D4D8'
                 }
             )
-            fig_p.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#f1f5f9'))
-            st.plotly_chart(fig_p, use_container_width=True)
+            fig_bar.update_layout(
+                title=dict(text="ANTRENÖR KARAR DAĞILIMI", font=dict(family="Space Grotesk", size=13, color="#09090B")),
+                paper_bgcolor='#FFFFFF', plot_bgcolor='#FAFAFA',
+                font=dict(family="Inter", color='#09090B', size=12),
+                showlegend=False,
+                margin=dict(l=20, r=20, t=45, b=20),
+                height=320,
+                xaxis=dict(title="", showgrid=False, linecolor='#E4E4E7'),
+                yaxis=dict(title="Oy Sayısı", showgrid=True, gridcolor='#E4E4E7', dtick=1)
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
 
         with rep_c2:
-            st.subheader("📈 Model Öneri Skoru vs. Antrenör Memnuniyeti")
             fig_sc = px.scatter(
                 all_evals, x='model_score', y='tactical_fit_rating',
-                color='decision', hover_name='player_name',
-                labels={'model_score': 'Model Öneri Skoru (0-100)', 'tactical_fit_rating': 'Antrenör Puanı (1-5)'},
-                color_discrete_map={'buy': '#10b981', 'rotation': '#3b82f6', 'watchlist': '#f59e0b', 'reject': '#ef4444'}
+                hover_name='player_name',
+                labels={'model_score': 'Model Öneri Skoru (0–100)', 'tactical_fit_rating': 'Antrenör Puanı (1–5)'}
             )
+            fig_sc.update_traces(marker=dict(size=10, color='#09090B', line=dict(width=1, color='#FFFFFF')))
             fig_sc.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#f1f5f9'),
-                xaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                yaxis=dict(showgrid=True, gridcolor='#1e293b', dtick=1)
+                title=dict(text="MODEL SKORU VS. ANTRENÖR PUANI", font=dict(family="Space Grotesk", size=13, color="#09090B")),
+                paper_bgcolor='#FFFFFF', plot_bgcolor='#FAFAFA',
+                font=dict(family="Inter", color='#09090B', size=12),
+                margin=dict(l=20, r=20, t=45, b=20),
+                height=320,
+                xaxis=dict(showgrid=True, gridcolor='#E4E4E7', linecolor='#E4E4E7'),
+                yaxis=dict(showgrid=True, gridcolor='#E4E4E7', linecolor='#E4E4E7', dtick=1, range=[0.5, 5.5])
             )
             st.plotly_chart(fig_sc, use_container_width=True)
 
-        st.write("---")
-
-        st.subheader("📑 Son Kaydedilen Değerlendirmeler")
+        st.markdown('<div class="section-header" style="margin-top:20px;"><div><span class="step-num">03</span>KAYITLI DEĞERLENDİRME TABLOSU</div><span>SQLITE KAYITLARI</span></div>', unsafe_allow_html=True)
         cols_to_show = ['created_at', 'coach_name', 'club_name', 'player_name', 'target_position', 'formation', 'player_type', 'tactical_fit_rating', 'decision', 'feedback_note']
         existing_cols = [c for c in cols_to_show if c in all_evals.columns]
-        
-        st.dataframe(all_evals[existing_cols], use_container_width=True, height=350)
-        
+        st.dataframe(all_evals[existing_cols], use_container_width=True, height=320)
+
         csv_out = all_evals.to_csv(index=False).encode('utf-8')
         st.download_button(
-            "📥 Antrenör Doğrulama Raporunu İndir (CSV)",
+            "DOĞRULAMA VERİ SETİNİ İNDİR (CSV) →",
             data=csv_out,
             file_name="scoutme_antrenor_dogrulama_veriseti.csv",
             mime="text/csv"
@@ -668,7 +1000,8 @@ with portal_tab2:
 
 # Footer
 st.markdown("""
-<div style="text-align: center; margin-top: 50px; padding: 20px; color: #64748b; font-size: 0.85rem; border-top: 1px solid #1e293b;">
-    ScoutMe Yüksek Lisans Tezi &bull; Doğu Akdeniz Üniversitesi (DAÜ / EMU) Bilgisayar Mühendisliği &bull; 2026
+<div style="display:flex; justify-content:space-between; margin-top:48px; padding-top:16px; color:#71717A; font-size:0.75rem; border-top:1px solid #E4E4E7; font-family:'Space Grotesk', sans-serif; text-transform:uppercase; letter-spacing:0.06em;">
+    <span>SCOUTME // YÜKSEK LİSANS TEZ PROJESİ</span>
+    <span>DOĞU AKDENİZ ÜNİVERSİTESİ (DAÜ / EMU) BİLGİSAYAR MÜHENDİSLİĞİ • 2026</span>
 </div>
 """, unsafe_allow_html=True)
