@@ -28,3 +28,8 @@ id,coach_name,club_name,player_id,player_name,target_position,model_score,tactic
 27,CEMAL KIR,Mesarya SK,1973,PAPE CHEIKHOU MAREGA,FW,76.6,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
 28,CEMAL KIR,Mesarya SK,1736,MODOU GADJ,FW,75.2,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
 29,CEMAL KIR,Mesarya SK,1146,FREDERIC KOLOTO VIVIEN,FW,73.5,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
+30,CEMRE YILDIZEV,Cihangir GSK,1002,EMİRHAN ÇİL,DF,71.3,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
+31,CEMRE YILDIZEV,Cihangir GSK,149,ALİ FARUK ÇENBER,DF,70.6,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
+32,CEMRE YILDIZEV,Cihangir GSK,1150,FURKAN DOĞAN,DF,63.3,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
+33,CEMRE YILDIZEV,Cihangir GSK,1521,KORAY YAŞAR,DF,55.9,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
+34,CEMRE YILDIZEV,Cihangir GSK,840,CUMA İLKBAHAR,DF,55.8,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
