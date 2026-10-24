@@ -23,3 +23,8 @@ id,coach_name,club_name,player_id,player_name,target_position,model_score,tactic
 22,ALİ SAMANCIOĞLU,Geçitkale GSK,2288,WASIU MAYOWA OLAWOYIN,FW,81.6,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
 23,ALİ SAMANCIOĞLU,Geçitkale GSK,1174,GODWIN AREWA,FW,81.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
 24,ALİ SAMANCIOĞLU,Geçitkale GSK,1503,KERFALA BANGOURA,FW,80.7,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
+25,CEMAL KIR,Mesarya SK,1422,JOSEPH OFORI,FW,84.0,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
+26,CEMAL KIR,Mesarya SK,1705,MOTTON SAYON,FW,80.6,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
+27,CEMAL KIR,Mesarya SK,1973,PAPE CHEIKHOU MAREGA,FW,76.6,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
+28,CEMAL KIR,Mesarya SK,1736,MODOU GADJ,FW,75.2,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
+29,CEMAL KIR,Mesarya SK,1146,FREDERIC KOLOTO VIVIEN,FW,73.5,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
