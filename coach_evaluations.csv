@@ -18,3 +18,8 @@ id,coach_name,club_name,player_id,player_name,target_position,model_score,tactic
 17,İZZET KAÇMAZ,Maraş GSK,1167,GÖKMEN ESER,MF,93.1,1,1,1,reject,Çok genç süre alamaz ve defans yapamaz ,2026-10-20 15:16:19,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
 18,İZZET KAÇMAZ,Maraş GSK,523,ARTUN AKTUĞ,MF,91.5,3,1,2,watchlist,İlerde işime yarayabilir canlı görmek lazım ,2026-10-20 15:17:47,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
 19,İZZET KAÇMAZ,Maraş GSK,2229,TUNCER NİZAM,MF,91.0,1,1,1,reject,,2026-10-20 15:18:23,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
+20,ALİ SAMANCIOĞLU,Geçitkale GSK,1736,MODOU GADJ,FW,89.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,0.0
+21,ALİ SAMANCIOĞLU,Geçitkale GSK,1422,JOSEPH OFORI,FW,87.4,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
+22,ALİ SAMANCIOĞLU,Geçitkale GSK,2288,WASIU MAYOWA OLAWOYIN,FW,81.6,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
+23,ALİ SAMANCIOĞLU,Geçitkale GSK,1174,GODWIN AREWA,FW,81.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
+24,ALİ SAMANCIOĞLU,Geçitkale GSK,1503,KERFALA BANGOURA,FW,80.7,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
