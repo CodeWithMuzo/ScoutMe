@@ -57,6 +57,13 @@ TM_CLUBS = {
     "Genclik Gucu TSK": 42055,
 }
 
+VERIFIED_EXPERT_OVERRIDES = {
+    "EMRE KARACIGER": {
+        "category": "DF",
+        "primary_position": "Kanat / Bek (Winger / Fullback)"
+    }
+}
+
 def map_tm_position(pos_str):
     """Maps detailed Turkish Transfermarkt positions to standard category and role."""
     pos_str = pos_str.strip()
@@ -236,8 +243,16 @@ def run_position_inference():
         conf = 0.0
         source = None
 
+        # --- RULE 0: Verified Expert Domain Overrides ---
+        if norm_name in VERIFIED_EXPERT_OVERRIDES:
+            ov = VERIFIED_EXPERT_OVERRIDES[norm_name]
+            cat = ov["category"]
+            primary_pos = ov["primary_position"]
+            conf = 0.99
+            source = "expert_verified"
+
         # --- RULE 1: Transfermarkt Gold-Standard Match ---
-        if norm_name in tm_players:
+        elif norm_name in tm_players:
             tm_info = tm_players[norm_name]
             cat = tm_info["category"]
             primary_pos = tm_info["primary_position"]

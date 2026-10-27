@@ -508,7 +508,8 @@ def calculate_skills():
         else:
             age_phys_factor = max(0.65, 0.83 - (age - 33) * 0.03)
 
-        pos_phys_base = {"DF": 62, "MF": 58, "FW": 58, "GK": 55}.get(cat, 55)
+        eff_cat = "MF" if "Kanat / Bek" in pos else cat
+        pos_phys_base = {"DF": 62, "MF": 58, "FW": 58, "GK": 55}.get(eff_cat, 55)
 
         # Competition intensity scales physical score (playing 90 mins in U17 != 90 mins in Süper Lig)
         intensity_scale = 0.65 + 0.35 * comp_factor
@@ -529,17 +530,17 @@ def calculate_skills():
         # B. ŞUT PUANI (0 - 100)
         # Rekabet seviyesine göre ağırlıklandırılmış bitiricilik ve P90 gol
         # -------------------------------------------------------------
-        if cat == "FW":
+        if eff_cat == "FW":
             base_shoot = 46.0 + 6.0 * comp_factor
             p90_factor = min(1.0, effective_p90_goals / 0.60) * 36.0
             volume_bonus = min(8.0, senior_equiv_goals * 0.45)
             raw_shooting = base_shoot + p90_factor + volume_bonus
-        elif cat == "MF":
+        elif eff_cat == "MF":
             base_shoot = 40.0 + 5.0 * comp_factor
             p90_factor = min(1.0, effective_p90_goals / 0.32) * 35.0
             volume_bonus = min(12.0, senior_equiv_goals * 0.65)
             raw_shooting = base_shoot + p90_factor + volume_bonus
-        elif cat == "DF":
+        elif eff_cat == "DF":
             base_shoot = 32.0 + 4.0 * comp_factor
             p90_factor = min(1.0, effective_p90_goals / 0.14) * 35.0
             volume_bonus = min(15.0, senior_equiv_goals * 1.6)
@@ -556,7 +557,7 @@ def calculate_skills():
         # C. TEKNİK PUANI (0 - 100)
         # Oyun kurma, rekabet düzeltmeli saha içi averaj katkısı, top hakimiyeti
         # -------------------------------------------------------------
-        pos_tech_base = {"MF": 60, "FW": 56, "DF": 47, "GK": 38}.get(cat, 50)
+        pos_tech_base = {"MF": 60, "FW": 56, "DF": 47, "GK": 38}.get(eff_cat, 50)
         if "10 Numara" in pos or "Kanat" in pos or "Ofansif" in pos:
             pos_tech_base += 5.0
         elif "Ön Libero" in pos:
@@ -586,8 +587,8 @@ def calculate_skills():
         # D. DEFANS PUANI (0 - 100)
         # Pozisyon alma, kademe, A-takım clean sheet, az gol yeme
         # -------------------------------------------------------------
-        pos_def_base = {"DF": 66, "GK": 61, "MF": 50, "FW": 33}.get(cat, 45)
-        if "Stoper" in pos or "Bek" in pos:
+        pos_def_base = {"DF": 66, "GK": 61, "MF": 50, "FW": 33}.get(eff_cat, 45)
+        if "Stoper" in pos or ("Bek" in pos and "Kanat / Bek" not in pos):
             pos_def_base += 4.0
 
         scaled_def_base = pos_def_base * (0.72 + 0.28 * comp_factor)
@@ -610,7 +611,7 @@ def calculate_skills():
 
         xi_stability = starter_ratio * 8.0 * comp_factor
 
-        if 0.10 <= card_rate <= 0.28 and red == 0 and cat in ["DF", "MF"]:
+        if 0.10 <= card_rate <= 0.28 and red == 0 and eff_cat in ["DF", "MF"]:
             tackle_bonus = 4.0 * comp_factor
         else:
             tackle_bonus = 0.0
@@ -625,11 +626,11 @@ def calculate_skills():
         # E. GENEL REYTİNG (OVERALL RATING: 0 - 100)
         # Mevki ağırlıklı kompozit reyting + Rekabet Seviyesi Tavanı
         # -------------------------------------------------------------
-        if cat == "GK":
+        if eff_cat == "GK":
             overall = defending_score * 0.45 + physical_score * 0.35 + technical_score * 0.15 + shooting_score * 0.05
-        elif cat == "DF":
+        elif eff_cat == "DF":
             overall = defending_score * 0.45 + physical_score * 0.30 + technical_score * 0.15 + shooting_score * 0.10
-        elif cat == "MF":
+        elif eff_cat == "MF":
             overall = technical_score * 0.35 + physical_score * 0.25 + defending_score * 0.20 + shooting_score * 0.20
         else:  # FW
             overall = shooting_score * 0.45 + physical_score * 0.25 + technical_score * 0.25 + defending_score * 0.05

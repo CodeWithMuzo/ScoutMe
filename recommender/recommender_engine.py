@@ -333,9 +333,22 @@ class ScoutMeRecommender:
             if exclude_current_squad and (p_meta.get('club_name') or '').strip() == c_meta['name']:
                 continue
 
-            # 2. Position filter
-            if target_position and p_meta.get('pos_cat') != target_position.upper():
-                continue
+            # 2. Position filter (with multi-role support for Kanat / Bek versatile players)
+            prim_pos_lower = (p_meta.get('prim_pos') or '').lower()
+            sub_lower = (sub_position_label or '').lower()
+            if target_position:
+                t_pos = target_position.upper()
+                if 'kanat / bek' in prim_pos_lower:
+                    if t_pos == 'DF' and ('bek' in sub_lower or not sub_lower):
+                        pos_match = True
+                    elif t_pos == 'FW' and ('kanat' in sub_lower or 'winger' in sub_lower or not sub_lower):
+                        pos_match = True
+                    else:
+                        pos_match = False
+                else:
+                    pos_match = (p_meta.get('pos_cat') == t_pos)
+                if not pos_match:
+                    continue
 
             age = p_meta.get('age', 24)
             is_youth = p_meta.get('is_youth', age <= 21)
