@@ -7,8 +7,9 @@ Full Database Update & Synchronization Pipeline for ScoutMe (KTFF Ecosystem).
 3. Concurrently scrapes match details, full esame lineups, and timeline events (goals, cards, subs).
 4. Updates `matches`, `match_lineups`, and `match_events` in `data/ktff.db`.
 5. Syncs `player_season_stats` for 2026-2027 based on official match data.
-6. Re-calculates 4-pillar player skill ratings (Physical, Shooting, Technical, Defending, OVR).
-7. Re-builds HGNN graph topology and latent embeddings (`hgnn_embeddings.pt`).
+6. Re-runs 4-tier Position Inference (`infer_positions.py`) for all players.
+7. Re-calculates 4-pillar player skill ratings (Physical, Shooting, Technical, Defending, OVR).
+8. Re-builds HGNN graph topology and latent embeddings (`hgnn_embeddings.pt`).
 """
 
 import sys
@@ -37,11 +38,11 @@ from scraper.ktff_client import KTFFClient
 db_lock = Lock()
 
 TARGET_LEAGUES_SEASONS_2026 = [
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA Süper Lig", "comp_id": 60, "max_pages": 7},
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA 1.Lig", "comp_id": 62, "max_pages": 7},
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 Süper Lig", "comp_id": 64, "max_pages": 7},
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 1.Lig", "comp_id": 65, "max_pages": 7},
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "U17 Elit Lig", "comp_id": 148, "max_pages": 7},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA Süper Lig", "comp_id": 60, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA 1.Lig", "comp_id": 62, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 Süper Lig", "comp_id": 64, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 1.Lig", "comp_id": 65, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "U17 Elit Lig", "comp_id": 148, "max_pages": 10},
 ]
 
 def scan_for_matches_needing_update(client, conn):
@@ -453,8 +454,8 @@ def sync_player_season_stats_2026(conn):
     for lic, pname, cname in lineup_players:
         if str(lic) not in existing_players:
             cur.execute("""
-                INSERT INTO players (license_no, name, current_club, nationality, status)
-                VALUES (?, ?, ?, 'KKTC', 'Aktif')
+                INSERT INTO players (license_no, name, current_club, nationality, gender, status)
+                VALUES (?, ?, ?, 'KKTC', 'Erkek', 'Aktif')
             """, (lic, pname, cname))
             new_id = cur.lastrowid
             new_kpid = 9000000 + new_id
@@ -463,6 +464,7 @@ def sync_player_season_stats_2026(conn):
             new_players_added += 1
             
     cur.execute("UPDATE players SET ktff_player_id = 9000000 + id WHERE ktff_player_id IS NULL OR ktff_player_id = 0")
+    cur.execute("UPDATE players SET gender = 'Erkek' WHERE gender IS NULL OR gender = ''")
     conn.commit()
     print(f"[*] Veritabanına yeni eklenen futbolcu sayısı: {new_players_added}")
 
@@ -563,6 +565,13 @@ def main():
     # Step 3: Sync Season Stats
     sync_player_season_stats_2026(conn)
     conn.close()
+
+    # Step 3.5: Infer Positions
+    print("\n" + "=" * 70)
+    print(" 🎯 ADIM 3.5: OYUNCU MEVKİ ÇIKARIMI (POSITION INFERENCE) YENİLENİYOR")
+    print("=" * 70)
+    from analytics.infer_positions import run_position_inference
+    run_position_inference()
 
     # Step 4: Recalculate Skills
     print("\n" + "=" * 70)
