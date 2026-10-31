@@ -1,40 +1,45 @@
-id,coach_name,club_name,player_id,player_name,target_position,model_score,tactical_fit_rating,playing_time_rating,feasibility_rating,decision,feedback_note,created_at,formation,player_type,is_known
-1,ERDN BREK,China Bazaar Genlik Gc TSK,1,CEMAL MELHEM,FW,83.2,5,4,4,buy,"Ceza sahasnda ok hareketli, bitiricilii sisteme tam oturur.",2026-10-04 17:46:25,,,
-2,ERDN BREK,China Bazaar Genlik Gc TSK,2,HARUN TEMEL,FW,81.0,4,4,4,buy,"Fizik gc yksek, kanat forvet rotasyonunda ok i yapar.",2026-10-04 17:46:25,,,
-3,ERDN BREK,China Bazaar Genlik Gc TSK,3,DAVUD JUMAKULYYEV,FW,79.7,4,3,4,rotation,"Gen ve alk dzeyi yksek, yedekten girip skor deitirebilir.",2026-10-04 17:46:25,,,
-4,NAZIM AKTUN,Doan Trk Birlii,4,ZHN TEMELC,DF,85.5,5,5,5,buy,"Lider stoper, duran toplarda da byk tehdit. Kesinlikle ilk 11.",2026-10-04 17:46:25,,,
-5,NAZIM AKTUN,Doan Trk Birlii,5,DEMR TANRIVERD,DF,80.0,4,4,4,buy,"Gen yana ramen pozisyon bilgisi olgun, geliime ak.",2026-10-04 17:46:25,,,
-6,NAZIM AKTUN,Doan Trk Birlii,6,KAZIM ORHAN,DF,78.2,4,3,4,rotation,Savunma kurgumuza yedek g olarak derinlik kazandrr.,2026-10-04 17:46:25,,,
-7,CEMRE YILDIZEV,Cihangir GSK,7,ARAS KOLUKISSA,MF,87.3,5,5,4,buy,Merkezde oyun kurucu rolnde takmn pas temposunu ynetir.,2026-10-04 17:46:25,,,
-8,CEMRE YILDIZEV,Cihangir GSK,8,BAYRAM ACHILOV,MF,87.3,5,4,4,buy,"Hem defansif hem ofansif geilerde dinamik, tam aradmz 8 numara.",2026-10-04 17:46:25,,,
-9,CEMRE YILDIZEV,Cihangir GSK,9,DAMIR GOLOSHCHAPOV,MF,86.6,4,4,4,buy,"Top teknii yksek, dar alandan klar baarl.",2026-10-04 17:46:25,,,
-10,SABR DENZ,Dumlupnar TSK,10,OUSMANE DIABY,MF,88.0,5,5,4,buy,"Ligin en dominant yabanclarndan biri, ilk 11 dorudan deimez.",2026-10-04 17:46:25,,,
-11,SABR DENZ,Dumlupnar TSK,11,HASAN AYDOMU,MF,75.3,4,3,4,watchlist,"Gzlemlenebilir, taktik disiplini oturursa rotasyona girer.",2026-10-04 17:46:25,,,
-12,OKTAY ERDEM,Alsancak Yeilova SK,12,KERFALA BANGOURA,FW,81.7,5,5,5,buy,"Hzl ve patlayc forvet, kontratak futbolumuza kusursuz uyar.",2026-10-04 17:46:25,,,
-13,OKTAY ERDEM,Alsancak Yeilova SK,13,ALPHONSE GOMIS,FW,74.9,4,4,4,rotation,Fiziksel mcadele gc yksek tamamlayc forvet.,2026-10-04 17:46:25,,,
-14,KEMAL YREKL,etinkaya TSK,14,DOAN GRGEN,DF,80.1,4,4,4,buy,Defansif sertlii ve hamle zamanlamas gayet iyi.,2026-10-04 17:46:25,,,
-15,KEMAL YREKL,etinkaya TSK,15,SULTAN BABAYEV,DF,76.6,3,3,4,watchlist,"Gen ve potansiyelli, biraz daha tecrbe kazanmas lazm.",2026-10-04 17:46:25,,,
-16,İZZET KAÇMAZ,Maraş GSK,1115,ERTAN YOLAÇ,MF,94.0,1,1,1,reject,Çok genç İlk 11 için oyuncu arıyorum forma şansı bualamaz ,2026-10-20 15:15:40,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
-17,İZZET KAÇMAZ,Maraş GSK,1167,GÖKMEN ESER,MF,93.1,1,1,1,reject,Çok genç süre alamaz ve defans yapamaz ,2026-10-20 15:16:19,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
-18,İZZET KAÇMAZ,Maraş GSK,523,ARTUN AKTUĞ,MF,91.5,3,1,2,watchlist,İlerde işime yarayabilir canlı görmek lazım ,2026-10-20 15:17:47,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
-19,İZZET KAÇMAZ,Maraş GSK,2229,TUNCER NİZAM,MF,91.0,1,1,1,reject,,2026-10-20 15:18:23,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0
-20,ALİ SAMANCIOĞLU,Geçitkale GSK,1736,MODOU GADJ,FW,89.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,0.0
-21,ALİ SAMANCIOĞLU,Geçitkale GSK,1422,JOSEPH OFORI,FW,87.4,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
-22,ALİ SAMANCIOĞLU,Geçitkale GSK,2288,WASIU MAYOWA OLAWOYIN,FW,81.6,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
-23,ALİ SAMANCIOĞLU,Geçitkale GSK,1174,GODWIN AREWA,FW,81.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
-24,ALİ SAMANCIOĞLU,Geçitkale GSK,1503,KERFALA BANGOURA,FW,80.7,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0
-25,CEMAL KIR,Mesarya SK,1422,JOSEPH OFORI,FW,84.0,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
-26,CEMAL KIR,Mesarya SK,1705,MOTTON SAYON,FW,80.6,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
-27,CEMAL KIR,Mesarya SK,1973,PAPE CHEIKHOU MAREGA,FW,76.6,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
-28,CEMAL KIR,Mesarya SK,1736,MODOU GADJ,FW,75.2,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
-29,CEMAL KIR,Mesarya SK,1146,FREDERIC KOLOTO VIVIEN,FW,73.5,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0
-30,CEMRE YILDIZEV,Cihangir GSK,1002,EMİRHAN ÇİL,DF,71.3,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
-31,CEMRE YILDIZEV,Cihangir GSK,149,ALİ FARUK ÇENBER,DF,70.6,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
-32,CEMRE YILDIZEV,Cihangir GSK,1150,FURKAN DOĞAN,DF,63.3,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
-33,CEMRE YILDIZEV,Cihangir GSK,1521,KORAY YAŞAR,DF,55.9,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
-34,CEMRE YILDIZEV,Cihangir GSK,840,CUMA İLKBAHAR,DF,55.8,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0
-35,CEMRE YILDIZEV,Cihangir GSK,2111,SERHAT DESTE,MF,75.9,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0
-36,CEMRE YILDIZEV,Cihangir GSK,248,ABABACAR SARR,MF,75.8,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0
-37,CEMRE YILDIZEV,Cihangir GSK,1867,NEVZAT DURAN,MF,75.1,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0
-38,CEMRE YILDIZEV,Cihangir GSK,2101,SEMİH ÜNALDI,MF,71.4,3,5,2,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0
-39,CEMRE YILDIZEV,Cihangir GSK,2091,SELİM SAYGI,MF,71.1,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0
+id,coach_name,club_name,player_id,player_name,target_position,model_score,tactical_fit_rating,playing_time_rating,feasibility_rating,decision,feedback_note,created_at,formation,player_type,is_known,player_archetype,is_known_player
+1,ERDN BREK,China Bazaar Genlik Gc TSK,1,CEMAL MELHEM,FW,83.2,5,4,4,buy,"Ceza sahasnda ok hareketli, bitiricilii sisteme tam oturur.",2026-10-04 17:46:25,,,,,1
+2,ERDN BREK,China Bazaar Genlik Gc TSK,2,HARUN TEMEL,FW,81.0,4,4,4,buy,"Fizik gc yksek, kanat forvet rotasyonunda ok i yapar.",2026-10-04 17:46:25,,,,,1
+3,ERDN BREK,China Bazaar Genlik Gc TSK,3,DAVUD JUMAKULYYEV,FW,79.7,4,3,4,rotation,"Gen ve alk dzeyi yksek, yedekten girip skor deitirebilir.",2026-10-04 17:46:25,,,,,1
+4,NAZIM AKTUN,Doan Trk Birlii,4,ZHN TEMELC,DF,85.5,5,5,5,buy,"Lider stoper, duran toplarda da byk tehdit. Kesinlikle ilk 11.",2026-10-04 17:46:25,,,,,1
+5,NAZIM AKTUN,Doan Trk Birlii,5,DEMR TANRIVERD,DF,80.0,4,4,4,buy,"Gen yana ramen pozisyon bilgisi olgun, geliime ak.",2026-10-04 17:46:25,,,,,1
+6,NAZIM AKTUN,Doan Trk Birlii,6,KAZIM ORHAN,DF,78.2,4,3,4,rotation,Savunma kurgumuza yedek g olarak derinlik kazandrr.,2026-10-04 17:46:25,,,,,1
+7,CEMRE YILDIZEV,Cihangir GSK,7,ARAS KOLUKISSA,MF,87.3,5,5,4,buy,Merkezde oyun kurucu rolnde takmn pas temposunu ynetir.,2026-10-04 17:46:25,,,,,1
+8,CEMRE YILDIZEV,Cihangir GSK,8,BAYRAM ACHILOV,MF,87.3,5,4,4,buy,"Hem defansif hem ofansif geilerde dinamik, tam aradmz 8 numara.",2026-10-04 17:46:25,,,,,1
+9,CEMRE YILDIZEV,Cihangir GSK,9,DAMIR GOLOSHCHAPOV,MF,86.6,4,4,4,buy,"Top teknii yksek, dar alandan klar baarl.",2026-10-04 17:46:25,,,,,1
+10,SABR DENZ,Dumlupnar TSK,10,OUSMANE DIABY,MF,88.0,5,5,4,buy,"Ligin en dominant yabanclarndan biri, ilk 11 dorudan deimez.",2026-10-04 17:46:25,,,,,1
+11,SABR DENZ,Dumlupnar TSK,11,HASAN AYDOMU,MF,75.3,4,3,4,watchlist,"Gzlemlenebilir, taktik disiplini oturursa rotasyona girer.",2026-10-04 17:46:25,,,,,1
+12,OKTAY ERDEM,Alsancak Yeilova SK,12,KERFALA BANGOURA,FW,81.7,5,5,5,buy,"Hzl ve patlayc forvet, kontratak futbolumuza kusursuz uyar.",2026-10-04 17:46:25,,,,,1
+13,OKTAY ERDEM,Alsancak Yeilova SK,13,ALPHONSE GOMIS,FW,74.9,4,4,4,rotation,Fiziksel mcadele gc yksek tamamlayc forvet.,2026-10-04 17:46:25,,,,,1
+14,KEMAL YREKL,etinkaya TSK,14,DOAN GRGEN,DF,80.1,4,4,4,buy,Defansif sertlii ve hamle zamanlamas gayet iyi.,2026-10-04 17:46:25,,,,,1
+15,KEMAL YREKL,etinkaya TSK,15,SULTAN BABAYEV,DF,76.6,3,3,4,watchlist,"Gen ve potansiyelli, biraz daha tecrbe kazanmas lazm.",2026-10-04 17:46:25,,,,,1
+16,İZZET KAÇMAZ,Maraş GSK,1115,ERTAN YOLAÇ,MF,94.0,1,1,1,reject,Çok genç İlk 11 için oyuncu arıyorum forma şansı bualamaz ,2026-10-20 15:15:40,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0,,1
+17,İZZET KAÇMAZ,Maraş GSK,1167,GÖKMEN ESER,MF,93.1,1,1,1,reject,Çok genç süre alamaz ve defans yapamaz ,2026-10-20 15:16:19,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0,,1
+18,İZZET KAÇMAZ,Maraş GSK,523,ARTUN AKTUĞ,MF,91.5,3,1,2,watchlist,İlerde işime yarayabilir canlı görmek lazım ,2026-10-20 15:17:47,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0,,1
+19,İZZET KAÇMAZ,Maraş GSK,2229,TUNCER NİZAM,MF,91.0,1,1,1,reject,,2026-10-20 15:18:23,4-2-3-1,Defansif Çapa / Top Kapan Kesici,0.0,,1
+20,ALİ SAMANCIOĞLU,Geçitkale GSK,1736,MODOU GADJ,FW,89.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,0.0,,1
+21,ALİ SAMANCIOĞLU,Geçitkale GSK,1422,JOSEPH OFORI,FW,87.4,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0,,1
+22,ALİ SAMANCIOĞLU,Geçitkale GSK,2288,WASIU MAYOWA OLAWOYIN,FW,81.6,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0,,1
+23,ALİ SAMANCIOĞLU,Geçitkale GSK,1174,GODWIN AREWA,FW,81.3,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0,,1
+24,ALİ SAMANCIOĞLU,Geçitkale GSK,1503,KERFALA BANGOURA,FW,80.7,4,4,4,rotation,,2026-10-24 15:01:35,4-2-3-1,Çizgiye İnen Tempolu Kanat & Orta Tehdidi,1.0,,1
+25,CEMAL KIR,Mesarya SK,1422,JOSEPH OFORI,FW,84.0,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0,,1
+26,CEMAL KIR,Mesarya SK,1705,MOTTON SAYON,FW,80.6,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0,,1
+27,CEMAL KIR,Mesarya SK,1973,PAPE CHEIKHOU MAREGA,FW,76.6,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0,,1
+28,CEMAL KIR,Mesarya SK,1736,MODOU GADJ,FW,75.2,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0,,1
+29,CEMAL KIR,Mesarya SK,1146,FREDERIC KOLOTO VIVIEN,FW,73.5,4,4,4,rotation,,2026-10-24 15:04:06,4-4-2,Sahte 9 / Bağlantı Oyuncusu,1.0,,1
+30,CEMRE YILDIZEV,Cihangir GSK,1002,EMİRHAN ÇİL,DF,71.3,5,5,5,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0,,1
+31,CEMRE YILDIZEV,Cihangir GSK,149,ALİ FARUK ÇENBER,DF,70.6,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0,,1
+32,CEMRE YILDIZEV,Cihangir GSK,1150,FURKAN DOĞAN,DF,63.3,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0,,1
+33,CEMRE YILDIZEV,Cihangir GSK,1521,KORAY YAŞAR,DF,55.9,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0,,1
+34,CEMRE YILDIZEV,Cihangir GSK,840,CUMA İLKBAHAR,DF,55.8,4,4,4,rotation,,2026-10-24 15:06:34,3-5-2,Topla Çıkan Modern Pasör Stoper,1.0,,1
+35,CEMRE YILDIZEV,Cihangir GSK,2111,SERHAT DESTE,MF,75.9,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0,,1
+36,CEMRE YILDIZEV,Cihangir GSK,248,ABABACAR SARR,MF,75.8,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0,,1
+37,CEMRE YILDIZEV,Cihangir GSK,1867,NEVZAT DURAN,MF,75.1,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0,,1
+38,CEMRE YILDIZEV,Cihangir GSK,2101,SEMİH ÜNALDI,MF,71.4,3,5,2,buy,[SEÇİLEN OYUNCU] ,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0,,1
+39,CEMRE YILDIZEV,Cihangir GSK,2091,SELİM SAYGI,MF,71.1,4,4,4,rotation,,2026-10-24 15:13:31,4-2-3-1,Yaratıcı 10 Numara / Asistçi,1.0,,1
+40,AHMET OGAN,Mormenekşe GBSK,2288,WASIU MAYOWA OLAWOYIN,MF,84.2,4,4,5,rotation,,2026-10-31 14:11:52,4-3-3,Yaratıcı 10 Numara,1.0,,1
+41,AHMET OGAN,Mormenekşe GBSK,1503,KERFALA BANGOURA,MF,81.1,4,4,4,rotation,,2026-10-31 14:11:52,4-3-3,Yaratıcı 10 Numara,1.0,,1
+42,AHMET OGAN,Mormenekşe GBSK,1847,MUZAFFER KHAN,MF,76.6,4,3,5,buy,[SEÇİLEN OYUNCU] Tanıdığım bir oyuncu iki yönlü oynayabilen oyun kurucu,2026-10-31 14:11:52,4-3-3,Yaratıcı 10 Numara,1.0,,1
+43,AHMET OGAN,Mormenekşe GBSK,1987,PRAISE SAMUEL ADEBISI,MF,76.4,4,4,4,rotation,,2026-10-31 14:11:52,4-3-3,Yaratıcı 10 Numara,1.0,,1
+44,AHMET OGAN,Mormenekşe GBSK,1699,MEL LIDEE YOANE CLAUDE LASME,MF,72.0,4,4,4,rotation,,2026-10-31 14:11:52,4-3-3,Yaratıcı 10 Numara,1.0,,1
