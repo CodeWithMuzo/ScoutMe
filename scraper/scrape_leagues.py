@@ -12,8 +12,6 @@ CORE_LEAGUES = [
     {"name": "AKSA A2 Süper Lig", "slug": "aksa-a2-super-lig-165", "tier": 4, "gender": "male"},
     {"name": "AKSA A2 1.Lig", "slug": "aksa-a2-1lig-166", "tier": 5, "gender": "male"},
     {"name": "DIGITURK KIBRIS U17 Elit Lig", "slug": "u17-elit-lig-245", "tier": 6, "gender": "male"},
-    {"name": "BTM 1.Lig", "slug": "btm-1lig", "tier": 3, "gender": "male"},
-    {"name": "BTM 2.Lig", "slug": "btm-2lig", "tier": 7, "gender": "male"},
 ]
 
 CORE_SEASONS = [
