@@ -23,6 +23,8 @@ TARGET_LEAGUES_SEASONS = [
     # 2026-2027 (Season 13)
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA Süper Lig", "comp_id": 60},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA 1.Lig", "comp_id": 62},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 Süper Lig", "comp_id": 64},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 1.Lig", "comp_id": 65},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "U17 Elit Lig", "comp_id": 148},
@@ -30,6 +32,8 @@ TARGET_LEAGUES_SEASONS = [
     # 2025-2026 (Season 11)
     {"season_name": "2025-2026", "season_id": 11, "comp_name": "AKSA Süper Lig", "comp_id": 1},
     {"season_name": "2025-2026", "season_id": 11, "comp_name": "AKSA 1.Lig", "comp_id": 61},
+    {"season_name": "2025-2026", "season_id": 11, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120},
+    {"season_name": "2025-2026", "season_id": 11, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121},
     {"season_name": "2025-2026", "season_id": 11, "comp_name": "AKSA A2 Süper Lig", "comp_id": 63},
     {"season_name": "2025-2026", "season_id": 11, "comp_name": "AKSA A2 1.Lig", "comp_id": 22},
     {"season_name": "2025-2026", "season_id": 11, "comp_name": "U17 Elit Lig", "comp_id": 148},
@@ -37,6 +41,8 @@ TARGET_LEAGUES_SEASONS = [
     # 2024-2025 (Season 10)
     {"season_name": "2024-2025", "season_id": 10, "comp_name": "AKSA Süper Lig", "comp_id": 1},
     {"season_name": "2024-2025", "season_id": 10, "comp_name": "AKSA 1.Lig", "comp_id": 61},
+    {"season_name": "2024-2025", "season_id": 10, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120},
+    {"season_name": "2024-2025", "season_id": 10, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121},
     {"season_name": "2024-2025", "season_id": 10, "comp_name": "AKSA A2 Süper Lig", "comp_id": 63},
     {"season_name": "2024-2025", "season_id": 10, "comp_name": "AKSA A2 1.Lig", "comp_id": 22},
     {"season_name": "2024-2025", "season_id": 10, "comp_name": "U17 Elit Lig", "comp_id": 148},

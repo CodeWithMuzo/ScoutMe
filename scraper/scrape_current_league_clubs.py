@@ -52,8 +52,56 @@ LEAGUE_CLUBS = {
         "Türk Ocağı Limasol SK",
         "Yeniboğaziçi DSK",
         "Çello Dikmen Gücü SK"
+    ],
+    "BTM 1.Lig Kırmızı Grup": [
+        "Alacan Group Türkmenköy ASK",
+        "Boğaziçi SK",
+        "Dika SK",
+        "Dipkarpaz SK",
+        "Dörtyol SK",
+        "Evleksiz Uni. Güvercinlik İYSK",
+        "Hamitköy ŞHSK",
+        "Kaplıca Karadeniz 61 SK",
+        "Tuzlaspor",
+        "Vadili TÇBSK"
+    ],
+    "BTM 1.Lig Beyaz Grup": [
+        "Akdeniz KVSD",
+        "Ağırdağ Boğaz TSK",
+        "Binatlı YSK",
+        "Denizli SK",
+        "Gaziveren SK",
+        "Girne Halk Evi SK",
+        "Ortaköy SK",
+        "T. Ersalıcı Tepebaşı SK",
+        "Yalova SK",
+        "Ysabel Pınarbaşı ÇSK",
+        "Çamlıbel SKD"
     ]
 }
+
+LEAGUE_KTFF_IDS = {
+    "AKSA Süper Lig": "117",
+    "AKSA 1.Lig": "123",
+    "BTM 1.Lig Kırmızı Grup": "516",
+    "BTM 1.Lig Beyaz Grup": "517"
+}
+
+def get_league_club_urls(client, league_id):
+    """Fetches all club detail URLs directly for a KTFF league ID."""
+    urls = {}
+    for page in range(1, 4):
+        soup = client.get_soup(f"https://ktff.org/bilgi-bankasi/kulupler?league={league_id}&page={page}")
+        if not soup:
+            break
+        links = [a["href"] for a in soup.find_all("a", href=True) if "/bilgi-bankasi/kulupler/" in a["href"] and "Detay" in a.text]
+        if not links:
+            break
+        for u in links:
+            detail = parse_club_detail(client, u)
+            if detail and detail["name"]:
+                urls[detail["name"].strip()] = detail
+    return urls
 
 def search_club_url(client, club_name):
     """Searches KTFF database for club profile URL."""
@@ -67,6 +115,14 @@ def search_club_url(client, club_name):
         search_terms.append("Yılmazköy")
     elif "Dikmen Gücü" in club_name:
         search_terms.append("Dikmen Gücü")
+    elif "Türkmenköy" in club_name:
+        search_terms.append("Türkmenköy")
+    elif "Güvercinlik" in club_name:
+        search_terms.append("Güvercinlik")
+    elif "Tepebaşı" in club_name:
+        search_terms.append("Tepebaşı")
+    elif "Pınarbaşı" in club_name:
+        search_terms.append("Pınarbaşı")
 
     for term in search_terms:
         query = urllib.parse.quote(term)
@@ -82,31 +138,35 @@ def search_club_url(client, club_name):
 
 def run_scrape_current_clubs():
     """
-    Scrapes and updates the SQLite 'clubs' table so that it ONLY contains
-    the official 2026-2027 AKSA Süper Lig and AKSA 1. Lig clubs.
+    Scrapes and updates the SQLite 'clubs' table so that it contains
+    the official 2026-2027 AKSA Süper Lig, AKSA 1. Lig, and BTM 1. Lig (Kırmızı & Beyaz Grup) clubs.
     """
     init_db()
     conn = get_connection()
     cur = conn.cursor()
-    client = KTFFClient(delay_seconds=0.2)
+    client = KTFFClient(use_cache=False, delay_seconds=0.08)
 
     print("=" * 70)
-    print(" 🏟️  SCOUTME: 2026-2027 AKSA SÜPER LİG & 1. LİG KULÜPLERİ GÜNCELLEMESİ")
+    print(" 🏟️  SCOUTME: 2026-2027 SÜPER LİG, 1. LİG & BTM 1. LİG KULÜPLERİ GÜNCELLEMESİ")
     print("=" * 70)
 
     club_records = []
 
     for league_name, clubs in LEAGUE_CLUBS.items():
         print(f"\n[*] Processing {league_name} ({len(clubs)} kulüp)...")
+        lid = LEAGUE_KTFF_IDS.get(league_name)
+        direct_details = get_league_club_urls(client, lid) if lid else {}
+
         for club_name in clubs:
-            club_url = search_club_url(client, club_name)
-            detail = None
-            if club_url:
-                detail = parse_club_detail(client, club_url)
+            detail = direct_details.get(club_name)
+            if not detail:
+                club_url = search_club_url(client, club_name)
+                if club_url:
+                    detail = parse_club_detail(client, club_url)
 
             if detail:
                 club_records.append({
-                    "name": detail["name"] or club_name,
+                    "name": club_name,
                     "slug": detail["slug"] or club_name.lower().replace(" ", "-"),
                     "city": detail["city"],
                     "stadium_name": detail["stadium_name"],
@@ -115,7 +175,7 @@ def run_scrape_current_clubs():
                     "address": detail["address"],
                     "league_name": league_name
                 })
-                print(f"    [+] {detail['name']:<28} | Şehir: {detail['city']:<12} | Başkan: {detail['president']}")
+                print(f"    [+] {club_name:<32} | Şehir: {detail['city']:<12} | Başkan: {detail['president']}")
             else:
                 # Fallback if no profile detail found
                 slug = club_name.lower().replace(" ", "-")
@@ -129,7 +189,7 @@ def run_scrape_current_clubs():
                     "address": "",
                     "league_name": league_name
                 })
-                print(f"    [!] {club_name:<28} | (Temel kayıt eklendi)")
+                print(f"    [!] {club_name:<32} | (Temel kayıt eklendi)")
 
     print(f"\n[*] Veritabanı güncelleniyor: 'clubs' tablosu sıfırlanıp sadece bu {len(club_records)} kulüp yazılıyor...")
     cur.execute("DELETE FROM clubs;")

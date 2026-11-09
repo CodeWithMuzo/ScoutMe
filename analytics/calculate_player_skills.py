@@ -49,9 +49,10 @@ def normalize_name(text):
 
 def classify_league_tier(league_name):
     """
-    Classifies a KTFF competition into one of 5 hierarchical tiers:
+    Classifies a KTFF competition into one of 6 hierarchical tiers:
     - 'SUPER_LIG' : AKSA Süper Lig (A-Takım 1. Kademe)
     - 'FIRST_LIG' : AKSA 1.Lig (A-Takım 2. Kademe)
+    - 'BTM_1'     : BTM 1.Lig Kırmızı / Beyaz Grup (A-Takım 3. Kademe)
     - 'A2_SUPER'  : AKSA A2 Süper Lig (Genç/Rezerv 1. Kademe)
     - 'A2_FIRST'  : AKSA A2 1.Lig (Genç/Rezerv 2. Kademe)
     - 'U17_YOUTH' : DIGITURK KIBRIS U17 Elit Lig / Alt Yapı
@@ -63,6 +64,8 @@ def classify_league_tier(league_name):
         if "Süper" in lname or "Super" in lname:
             return "A2_SUPER"
         return "A2_FIRST"
+    if "BTM" in lname:
+        return "BTM_1"
     if "Süper" in lname or "Super" in lname:
         return "SUPER_LIG"
     if "1.Lig" in lname or "1. Lig" in lname:
@@ -75,6 +78,7 @@ def classify_league_tier(league_name):
 TIER_WEIGHTS = {
     "SUPER_LIG": (1.00, 1.00, 1.00),
     "FIRST_LIG": (0.90, 0.82, 0.85),
+    "BTM_1":     (0.78, 0.65, 0.70),
     "A2_SUPER":  (0.62, 0.28, 0.35),
     "A2_FIRST":  (0.55, 0.22, 0.28),
     "U17_YOUTH": (0.46, 0.15, 0.20),
@@ -156,13 +160,20 @@ def calculate_skills():
     print("    [ SÜPER LİG | 1. LİG | A2 SÜPER | A2 1. LİG | U17/U15 ALT YAPI ]")
     print("=" * 75)
 
-    # 1. Load clubs to know which club is in Süper Lig vs 1. Lig
+    # 1. Load clubs to know which club is in Süper Lig vs 1. Lig vs BTM 1. Lig
     df_clubs = pd.read_sql_query("SELECT name, league_name FROM clubs", conn)
     club_is_super = {}
+    club_tier_map = {}
     for _, crow in df_clubs.iterrows():
         cname = str(crow['name'] or '').strip()
         l_str = str(crow['league_name'] or '')
         club_is_super[cname] = ('Süper' in l_str or 'Super' in l_str)
+        if 'Süper' in l_str or 'Super' in l_str:
+            club_tier_map[cname] = 'SUPER_LIG'
+        elif 'BTM' in l_str:
+            club_tier_map[cname] = 'BTM_1'
+        else:
+            club_tier_map[cname] = 'FIRST_LIG'
 
     # 2. Load players
     df_players = pd.read_sql_query("""
@@ -228,7 +239,7 @@ def calculate_skills():
         lic = str(grow['license_no']).strip()
         tier = classify_league_tier(grow['league_name'])
         if lic not in goals_by_lic_tier:
-            goals_by_lic_tier[lic] = {"SUPER_LIG": 0, "FIRST_LIG": 0, "A2_SUPER": 0, "A2_FIRST": 0, "U17_YOUTH": 0}
+            goals_by_lic_tier[lic] = {"SUPER_LIG": 0, "FIRST_LIG": 0, "BTM_1": 0, "A2_SUPER": 0, "A2_FIRST": 0, "U17_YOUTH": 0}
         goals_by_lic_tier[lic][tier] += int(grow['goal_cnt'])
 
     match_metrics_by_lic = {}
@@ -240,6 +251,7 @@ def calculate_skills():
             "senior_minutes": 0,
             "super_lig_minutes": 0,
             "first_lig_minutes": 0,
+            "btm1_minutes": 0,
             "a2_minutes": 0,
             "u17_minutes": 0,
             "senior_matches": 0,
@@ -264,7 +276,7 @@ def calculate_skills():
             continue
 
         tier = classify_league_tier(row['league_name'])
-        is_senior = tier in ("SUPER_LIG", "FIRST_LIG")
+        is_senior = tier in ("SUPER_LIG", "FIRST_LIG", "BTM_1")
         _, _, diff_w = TIER_WEIGHTS[tier]
 
         team_score = row['home_score'] if row['is_home'] == 1 else row['away_score']
@@ -292,8 +304,10 @@ def calculate_skills():
                 st["clean_sheets_senior"] += clean_sheet
                 if tier == "SUPER_LIG":
                     st["super_lig_minutes"] += mins
-                else:
+                elif tier == "FIRST_LIG":
                     st["first_lig_minutes"] += mins
+                else:
+                    st["btm1_minutes"] += mins
             elif tier in ("A2_SUPER", "A2_FIRST"):
                 st["a2_minutes"] += mins
                 st["a2_matches"] += 1
@@ -320,7 +334,8 @@ def calculate_skills():
         pos = p['primary_position'] or 'Orta Saha'
         age = parse_birth_year(p['birth_date'])
         club = (p['current_club'] or '').strip()
-        is_club_super = club_is_super.get(club, True)
+        is_club_super = club_is_super.get(club, False)
+        club_tier = club_tier_map.get(club, 'BTM_1')
 
         # Season stats
         st = stats_map.get(pid, None)
@@ -343,6 +358,7 @@ def calculate_skills():
             senior_minutes = m_st["senior_minutes"]
             super_mins = m_st["super_lig_minutes"]
             first_mins = m_st["first_lig_minutes"]
+            btm1_mins = m_st["btm1_minutes"]
             a2_mins = m_st["a2_minutes"]
             u17_mins = m_st["u17_minutes"]
             a_team_matches = m_st["senior_matches"]
@@ -367,6 +383,7 @@ def calculate_skills():
                 senior_minutes = 0
                 super_mins = 0
                 first_mins = 0
+                btm1_mins = 0
                 a2_mins = 0
                 u17_mins = total_minutes
                 a_team_matches = 0
@@ -375,14 +392,16 @@ def calculate_skills():
                 weighted_diff_goals = (team_goals_match - opp_goals_match) * 0.20
             else:
                 senior_minutes = total_minutes
-                super_mins = total_minutes if is_club_super else 0
-                first_mins = 0 if is_club_super else total_minutes
+                super_mins = total_minutes if club_tier == 'SUPER_LIG' else 0
+                first_mins = total_minutes if club_tier == 'FIRST_LIG' else 0
+                btm1_mins = total_minutes if club_tier == 'BTM_1' else 0
                 a2_mins = 0
                 u17_mins = 0
                 a_team_matches = played
                 a2_matches = 0
                 u17_matches = 0
-                weighted_diff_goals = (team_goals_match - opp_goals_match) * (0.95 if is_club_super else 0.82)
+                diff_mult = 0.95 if club_tier == 'SUPER_LIG' else (0.82 if club_tier == 'FIRST_LIG' else 0.70)
+                weighted_diff_goals = (team_goals_match - opp_goals_match) * diff_mult
 
         # -----------------------------------------------------------------
         # REKABET SEVİYESİ KATSAYISI (COMPETITION LEVEL CALIBRATION)
@@ -396,15 +415,14 @@ def calculate_skills():
             raw_comp_factor = (
                 1.00 * (super_mins / total_minutes) +
                 0.90 * (first_mins / total_minutes) +
+                0.78 * (btm1_mins / total_minutes) +
                 0.56 * (a2_mins / max(1, total_minutes)) +
                 0.42 * (u17_mins / max(1, total_minutes))
             )
         else:
-            raw_comp_factor = 0.42 if age <= 18 else (0.55 if age <= 20 else 0.85)
+            raw_comp_factor = 0.42 if age <= 18 else (0.55 if age <= 20 else 0.78)
 
         # Determine Senior Provenness & Maximum Allowed OVR Ceiling
-        # Youth players playing in U15/U17/A2 cannot get Senior A-Team star ratings (75-90 OVR)
-        # unless they actually play and prove themselves in Senior A-Team (AKSA Süper Lig / 1.Lig)!
         if a_team_matches == 0:
             if age <= 17 or (a2_matches == 0 and u17_matches > 0):
                 # Pure U15 / U17 Academy Player
@@ -422,18 +440,22 @@ def calculate_skills():
         elif a_team_matches < 10 or senior_minutes < 600:
             # Squad rotation player in Senior A-Team (5-9 matches)
             senior_exp_ratio = min(1.0, senior_minutes / 600.0)
-            comp_factor = max(0.74, raw_comp_factor * (0.82 + 0.18 * senior_exp_ratio))
-            ovr_ceiling = 76.5 if is_club_super else 74.0
+            comp_factor = max(0.70, raw_comp_factor * (0.82 + 0.18 * senior_exp_ratio))
+            ovr_ceiling = 76.5 if club_tier == 'SUPER_LIG' else (74.0 if club_tier == 'FIRST_LIG' else 71.5)
         else:
             # Proven Senior A-Team player (10+ Senior matches and 600+ Senior minutes)
-            # Even if they also played some A2 matches, judge them by their Senior ratio
-            comp_factor = max(0.80, min(1.00, 0.78 + 0.22 * senior_share))
+            senior_weighted_quality = (
+                1.00 * super_mins + 0.90 * first_mins + 0.78 * btm1_mins
+            ) / max(1, senior_minutes)
+            comp_factor = max(0.74, min(1.00, senior_weighted_quality * (0.78 + 0.22 * senior_share)))
             if super_mins >= 450:
                 ovr_ceiling = 95.0
             elif first_mins >= 450:
                 ovr_ceiling = 85.5
+            elif btm1_mins >= 450:
+                ovr_ceiling = 78.5
             else:
-                ovr_ceiling = 80.0
+                ovr_ceiling = 78.0
 
         # -----------------------------------------------------------------
         # REKABET SEVİYESİNE GÖRE DÜZELTİLMİŞ GOL VE P90 HESABI
@@ -442,21 +464,24 @@ def calculate_skills():
         if tier_goals:
             g_super = tier_goals["SUPER_LIG"]
             g_first = tier_goals["FIRST_LIG"]
+            g_btm1 = tier_goals.get("BTM_1", 0)
             g_a2s = tier_goals["A2_SUPER"]
             g_a2f = tier_goals["A2_FIRST"]
             g_u17 = tier_goals["U17_YOUTH"]
-            tracked_goals = g_super + g_first + g_a2s + g_a2f + g_u17
+            tracked_goals = g_super + g_first + g_btm1 + g_a2s + g_a2f + g_u17
             untracked_goals = max(0, raw_total_goals - tracked_goals)
 
             # Untracked goals from season_stats: if player has 0 or low senior share, they are youth goals
             if a_team_matches == 0 or (age <= 19 and senior_share < 0.25):
                 untracked_weight = 0.18 if age <= 17 else 0.25
             else:
-                untracked_weight = 0.85 * senior_share + 0.25 * (1.0 - senior_share)
+                sen_goal_w = 0.85 if (super_mins + first_mins) >= btm1_mins else 0.65
+                untracked_weight = sen_goal_w * senior_share + 0.25 * (1.0 - senior_share)
 
             senior_equiv_goals = (
                 g_super * 1.00 +
                 g_first * 0.82 +
+                g_btm1 * 0.65 +
                 g_a2s * 0.28 +
                 g_a2f * 0.22 +
                 g_u17 * 0.15 +

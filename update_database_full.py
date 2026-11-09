@@ -37,17 +37,26 @@ from scraper.ktff_client import KTFFClient
 
 db_lock = Lock()
 
-TARGET_LEAGUES_SEASONS_2026 = [
+TARGET_LEAGUES_SEASONS = [
+    # 2026-2027 (Season 13) - All Active Competitions including BTM 1.Lig
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA Süper Lig", "comp_id": 60, "max_pages": 10},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA 1.Lig", "comp_id": 62, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120, "max_pages": 6},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121, "max_pages": 6},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 Süper Lig", "comp_id": 64, "max_pages": 10},
     {"season_name": "2026-2027", "season_id": 13, "comp_name": "AKSA A2 1.Lig", "comp_id": 65, "max_pages": 10},
-    {"season_name": "2026-2027", "season_id": 13, "comp_name": "U17 Elit Lig", "comp_id": 148, "max_pages": 10},
+    {"season_name": "2026-2027", "season_id": 13, "comp_name": "DIGITURK KIBRIS U17 Elit Lig", "comp_id": 148, "max_pages": 6},
+
+    # Historical BTM 1.Lig Seasons (2025-2026 & 2024-2025) for 3-season statistical depth
+    {"season_name": "2025-2026", "season_id": 11, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120, "max_pages": 6},
+    {"season_name": "2025-2026", "season_id": 11, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121, "max_pages": 6},
+    {"season_name": "2024-2025", "season_id": 10, "comp_name": "BTM 1.Lig Kırmızı Grup", "comp_id": 120, "max_pages": 6},
+    {"season_name": "2024-2025", "season_id": 10, "comp_name": "BTM 1.Lig Beyaz Grup", "comp_id": 121, "max_pages": 6},
 ]
 
 def scan_for_matches_needing_update(client, conn):
     print("=" * 70)
-    print(" 🔍 ADIM 1: KTFF 2026-2027 CANLI MAÇ TARAMASI")
+    print(" 🔍 ADIM 1: KTFF CANLI MAÇ VE BTM 1.LİG TARAMASI")
     print("=" * 70)
     
     cur = conn.cursor()
@@ -55,7 +64,6 @@ def scan_for_matches_needing_update(client, conn):
         SELECT m.ktff_match_id, m.home_score, COUNT(l.id) as lc
         FROM matches m
         LEFT JOIN match_lineups l ON m.id = l.match_id
-        WHERE m.season = '2026-2027'
         GROUP BY m.ktff_match_id
     """)
     db_match_status = {row[0]: {"has_score": row[1] is not None, "lineups": row[2]} for row in cur.fetchall()}
@@ -74,7 +82,7 @@ def scan_for_matches_needing_update(client, conn):
             except ValueError:
                 continue
             text = card.get_text(" ", strip=True)
-            is_finished = "Maç Sonucu" in text or bool(re.search(r'\d+\s*-\s*\d+', text))
+            is_finished = "Maç Sonucu" in text or "Hükmen" in text or bool(re.search(r'\d+\s*-\s*\d+', text))
             score_m = re.search(r'(\d+)\s*-\s*(\d+)', text)
             score_str = f"{score_m.group(1)}-{score_m.group(2)}" if score_m else None
             
@@ -90,9 +98,9 @@ def scan_for_matches_needing_update(client, conn):
         return results
 
     all_matches = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = []
-        for tgt in TARGET_LEAGUES_SEASONS_2026:
+        for tgt in TARGET_LEAGUES_SEASONS:
             for p in range(1, tgt["max_pages"] + 1):
                 futures.append(executor.submit(scan_page, tgt, p))
         for f in concurrent.futures.as_completed(futures):
@@ -115,10 +123,10 @@ def scan_for_matches_needing_update(client, conn):
             to_scrape.append(m)
         else:
             st = db_match_status[mid]
-            if m["is_finished"] and (not st["has_score"] or st["lineups"] == 0):
+            if m["is_finished"] and not st["has_score"]:
                 to_scrape.append(m)
 
-    print(f"[*] Toplam taranan 2026-2027 maç sayısı : {len(unique_matches)}")
+    print(f"[*] Toplam taranan maç sayısı            : {len(unique_matches)}")
     print(f"[+] Çekilecek / Güncellenecek maç sayısı : {len(to_scrape)}")
     return to_scrape
 
@@ -433,9 +441,112 @@ def run_match_updates(matches_to_scrape, workers=8):
     print(f"[✓] {saved} maç, esameleri ve olaylarıyla birlikte başarıyla güncellendi! ({elapsed:.1f} sn)")
     conn.close()
 
+def scrape_new_and_btm1_active_players(client, conn, workers=12):
+    print("\n" + "=" * 70)
+    print(" 👤 ADIM 2.5: BTM 1.LİG VE YENİ LİSANSLI FUTBOLCU PROFİLLERİ ÇEKİLİYOR")
+    print("=" * 70)
+    from scraper.scrape_active_players import parse_full_player_profile, save_player_data, db_lock as sap_lock
+
+    cur = conn.cursor()
+    cur.execute("SELECT ktff_player_id, current_club FROM players WHERE ktff_player_id IS NOT NULL")
+    existing_kpids = {int(r[0]): (r[1] or "") for r in cur.fetchall()}
+
+    cur.execute("SELECT name FROM clubs WHERE league_name LIKE 'BTM%'")
+    btm_clubs = {r[0].strip() for r in cur.fetchall() if r[0]}
+
+    league_targets = [
+        ("516", "BTM 1.Lig Kırmızı Grup", 45, True),
+        ("517", "BTM 1.Lig Beyaz Grup", 45, True),
+        ("117", "AKSA Süper Lig", 45, False),
+        ("123", "AKSA 1.Lig", 45, False),
+        ("129", "AKSA A2 Süper Lig", 45, False),
+        ("135", "AKSA A2 1.Lig", 45, False),
+        ("310", "DIGITURK KIBRIS U17 Elit Lig", 40, False),
+    ]
+
+    def fetch_league_page(lid, page):
+        url = f"https://ktff.org/bilgi-bankasi/futbolcular?season=13&league={lid}&status=active&page={page}"
+        soup = client.get_soup(url)
+        if not soup:
+            return []
+        return [a["href"] for a in soup.find_all("a", href=True) if "/bilgi-bankasi/futbolcular/" in a["href"] and "Detay" in a.text]
+
+    urls_to_scrape = []
+    seen_urls = set()
+
+    for lid, lname, max_p, is_btm in league_targets:
+        league_urls = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = [ex.submit(fetch_league_page, lid, p) for p in range(1, max_p + 1)]
+            for f in concurrent.futures.as_completed(futs):
+                res = f.result()
+                if res:
+                    league_urls.extend(res)
+        league_urls = list(dict.fromkeys(league_urls))
+        added_for_league = 0
+        for u in league_urls:
+            if u in seen_urls:
+                continue
+            try:
+                kpid = int(u.split("?")[0].rstrip("/").split("/")[-1])
+            except ValueError:
+                continue
+            if kpid not in existing_kpids or (is_btm and existing_kpids.get(kpid) not in btm_clubs):
+                seen_urls.add(u)
+                urls_to_scrape.append(u)
+                added_for_league += 1
+        print(f"    - {lname:<28}: {len(league_urls):3d} aktif oyuncu ({added_for_league} yeni/güncellenecek profil)")
+
+    if not urls_to_scrape:
+        print("[✓] Tüm aktif lig oyuncu profilleri zaten veritabanında mevcut.")
+        return
+
+    print(f"[*] Toplam {len(urls_to_scrape)} futbolcu profili (biyografi, kariyer, sezon istatistikleri) çekiliyor...")
+    t0 = time.time()
+    saved_p = 0
+
+    def worker_player(url):
+        pdata = parse_full_player_profile(client, url)
+        if pdata:
+            # Reconcile placeholder ktff_player_id (>=9000000) with real ktff_player_id if license_no matches
+            if pdata.get("license_no"):
+                with sap_lock:
+                    c2 = conn.cursor()
+                    row = c2.execute(
+                        "SELECT id, ktff_player_id FROM players WHERE license_no = ? AND ktff_player_id >= 9000000",
+                        (pdata["license_no"],)
+                    ).fetchone()
+                    if row:
+                        real_exists = c2.execute(
+                            "SELECT id FROM players WHERE ktff_player_id = ?",
+                            (pdata["ktff_player_id"],)
+                        ).fetchone()
+                        if real_exists:
+                            c2.execute("DELETE FROM players WHERE id = ?", (row[0],))
+                        else:
+                            c2.execute("UPDATE players SET ktff_player_id = ? WHERE id = ?", (pdata["ktff_player_id"], row[0]))
+                            c2.execute("DELETE FROM player_season_stats WHERE ktff_player_id = ?", (row[1],))
+                        conn.commit()
+            save_player_data(pdata, conn)
+            return pdata["name"]
+        return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(worker_player, u) for u in urls_to_scrape]
+        for f in concurrent.futures.as_completed(futs):
+            res = f.result()
+            if res:
+                saved_p += 1
+                if saved_p % 50 == 0 or saved_p == len(urls_to_scrape):
+                    rate = saved_p / max(0.1, time.time() - t0)
+                    print(f"    [{saved_p:3d}/{len(urls_to_scrape)}] Futbolcu işlendi ({rate:.1f} oyuncu/sn) -> {res}")
+
+    print(f"[✓] {saved_p} futbolcu profili başarıyla eklendi/güncellendi! ({time.time() - t0:.1f} sn)")
+
+
 def sync_player_season_stats_2026(conn):
     print("\n" + "=" * 70)
-    print(" 🔄 ADIM 3: 2026-2027 SEZON İSTATİSTİKLERİ VE OYUNCULAR SENKRONİZE EDİLİYOR")
+    print(" 🔄 ADIM 3: SEZON İSTATİSTİKLERİ VE OYUNCU KULÜPLERİ SENKRONİZE EDİLİYOR")
     print("=" * 70)
     
     cur = conn.cursor()
@@ -462,105 +573,140 @@ def sync_player_season_stats_2026(conn):
             cur.execute("UPDATE players SET ktff_player_id = ? WHERE id = ?", (new_kpid, new_id))
             existing_players[str(lic)] = (new_id, new_kpid)
             new_players_added += 1
-            
+
+    # Update current_club for players appearing in 2026-2027 matches
+    cur.execute("""
+        SELECT l.license_no, l.club_name
+        FROM match_lineups l
+        JOIN matches m ON l.match_id = m.id
+        WHERE m.season = '2026-2027' AND l.license_no != '' AND l.club_name != ''
+        ORDER BY m.id ASC
+    """)
+    latest_2026_club = {str(r[0]): r[1] for r in cur.fetchall()}
+    for lic_str, c_name in latest_2026_club.items():
+        if lic_str in existing_players:
+            pid = existing_players[lic_str][0]
+            cur.execute("UPDATE players SET current_club = ? WHERE id = ?", (c_name, pid))
+
     cur.execute("UPDATE players SET ktff_player_id = 9000000 + id WHERE ktff_player_id IS NULL OR ktff_player_id = 0")
     cur.execute("UPDATE players SET gender = 'Erkek' WHERE gender IS NULL OR gender = ''")
     conn.commit()
-    print(f"[*] Veritabanına yeni eklenen futbolcu sayısı: {new_players_added}")
+    print(f"[*] Esamelerden yeni eklenen futbolcu sayısı: {new_players_added}")
+    print(f"[*] 2026-2027 güncel kulübü senkronize edilen futbolcu sayısı: {len(latest_2026_club)}")
 
-    # 2. Aggregate appearances and events for 2026-2027 directly from match_lineups and match_events
-    print("[*] 2026-2027 maç esamelerinden sezonluk istatistikler toplanıyor...")
-    
-    # Calculate appearances per license_no for 2026-2027
-    cur.execute("""
-        SELECT 
-            l.license_no,
-            SUM(l.is_starter) as starters,
-            SUM(CASE WHEN l.is_starter = 0 AND l.minutes_played > 0 THEN 1 ELSE 0 END) as sub_ins,
-            SUM(CASE WHEN l.is_starter = 0 AND l.minutes_played = 0 THEN 1 ELSE 0 END) as bench_unused,
-            SUM(CASE WHEN l.minutes_played > 0 THEN 1 ELSE 0 END) as total_played
-        FROM match_lineups l
-        JOIN matches m ON l.match_id = m.id
-        WHERE m.season = '2026-2027' AND l.license_no != ''
-        GROUP BY l.license_no
-    """)
-    app_stats = {str(r[0]): r for r in cur.fetchall()}
+    # 2. Aggregate appearances and events per season directly from match_lineups and match_events
+    for target_season in ['2024-2025', '2025-2026', '2026-2027']:
+        cur.execute("""
+            SELECT 
+                l.license_no,
+                SUM(l.is_starter) as starters,
+                SUM(CASE WHEN l.is_starter = 0 AND l.minutes_played > 0 THEN 1 ELSE 0 END) as sub_ins,
+                SUM(CASE WHEN l.is_starter = 0 AND l.minutes_played = 0 THEN 1 ELSE 0 END) as bench_unused,
+                SUM(CASE WHEN l.minutes_played > 0 THEN 1 ELSE 0 END) as total_played
+            FROM match_lineups l
+            JOIN matches m ON l.match_id = m.id
+            WHERE m.season = ? AND l.license_no != '' AND m.status = 'played'
+            GROUP BY l.license_no
+        """, (target_season,))
+        app_stats = {str(r[0]): r for r in cur.fetchall()}
 
-    # Calculate goals and cards per license_no or player_name for 2026-2027
-    cur.execute("""
-        SELECT 
-            l.license_no,
-            SUM(CASE WHEN e.event_type IN ('goal', 'penalty') THEN 1 ELSE 0 END) as goals,
-            SUM(CASE WHEN e.event_type = 'yellow_card' THEN 1 ELSE 0 END) as yellows,
-            SUM(CASE WHEN e.event_type = 'red_card' THEN 1 ELSE 0 END) as reds
-        FROM match_events e
-        JOIN matches m ON e.match_id = m.id
-        JOIN match_lineups l ON e.match_id = l.match_id AND LOWER(TRIM(l.player_name)) = LOWER(TRIM(e.player_name))
-        WHERE m.season = '2026-2027' AND l.license_no != ''
-        GROUP BY l.license_no
-    """)
-    event_stats = {str(r[0]): r for r in cur.fetchall()}
+        cur.execute("""
+            SELECT 
+                l.license_no,
+                SUM(CASE WHEN e.event_type IN ('goal', 'penalty') THEN 1 ELSE 0 END) as goals,
+                SUM(CASE WHEN e.event_type = 'yellow_card' THEN 1 ELSE 0 END) as yellows,
+                SUM(CASE WHEN e.event_type = 'red_card' THEN 1 ELSE 0 END) as reds
+            FROM match_events e
+            JOIN matches m ON e.match_id = m.id
+            JOIN match_lineups l ON e.match_id = l.match_id AND LOWER(TRIM(l.player_name)) = LOWER(TRIM(e.player_name))
+            WHERE m.season = ? AND l.license_no != '' AND m.status = 'played'
+            GROUP BY l.license_no
+        """, (target_season,))
+        event_stats = {str(r[0]): r for r in cur.fetchall()}
 
-    # Update player_season_stats for 2026-2027
-    updated_stats_count = 0
-    for lic, (pid, k_pid) in existing_players.items():
-        if lic in app_stats or lic in event_stats:
-            app = app_stats.get(lic)
-            ev = event_stats.get(lic)
-            
-            starters = app[1] if app else 0
-            sub_ins = app[2] if app else 0
-            bench = app[3] if app else 0
-            total_played = app[4] if app else 0
-            total_squad = starters + sub_ins + bench
-            
-            goals = ev[1] if ev else 0
-            yellows = ev[2] if ev else 0
-            reds = ev[3] if ev else 0
-            
-            cur.execute("SELECT id FROM player_season_stats WHERE ktff_player_id = ? AND season = '2026-2027'", (k_pid,))
-            row = cur.fetchone()
-            if row:
-                cur.execute("""
-                    UPDATE player_season_stats SET
-                        player_id = ?,
-                        goals = MAX(goals, ?),
-                        yellow_cards = MAX(yellow_cards, ?),
-                        red_cards = MAX(red_cards, ?),
-                        starter_matches = MAX(starter_matches, ?),
-                        sub_in_matches = MAX(sub_in_matches, ?),
-                        bench_unused_matches = MAX(bench_unused_matches, ?),
-                        total_played_matches = MAX(total_played_matches, ?),
-                        total_squad_matches = MAX(total_squad_matches, ?)
-                    WHERE id = ?
-                """, (pid, goals, yellows, reds, starters, sub_ins, bench, total_played, total_squad, row[0]))
-            else:
-                cur.execute("""
-                    INSERT INTO player_season_stats (
-                        player_id, ktff_player_id, season, goals, yellow_cards, red_cards,
-                        starter_matches, sub_in_matches, bench_unused_matches,
-                        total_played_matches, total_squad_matches
-                    )
-                    VALUES (?, ?, '2026-2027', ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (pid, k_pid, goals, yellows, reds, starters, sub_ins, bench, total_played, total_squad))
-            updated_stats_count += 1
+        updated_stats_count = 0
+        for lic, (pid, k_pid) in existing_players.items():
+            if lic in app_stats or lic in event_stats:
+                app = app_stats.get(lic)
+                ev = event_stats.get(lic)
+                
+                starters = app[1] if app else 0
+                sub_ins = app[2] if app else 0
+                bench = app[3] if app else 0
+                total_played = app[4] if app else 0
+                total_squad = starters + sub_ins + bench
+                
+                goals = ev[1] if ev else 0
+                yellows = ev[2] if ev else 0
+                reds = ev[3] if ev else 0
+                
+                cur.execute("SELECT id FROM player_season_stats WHERE ktff_player_id = ? AND season = ?", (k_pid, target_season))
+                row = cur.fetchone()
+                if row:
+                    cur.execute("""
+                        UPDATE player_season_stats SET
+                            player_id = ?,
+                            goals = MAX(goals, ?),
+                            yellow_cards = MAX(yellow_cards, ?),
+                            red_cards = MAX(red_cards, ?),
+                            starter_matches = MAX(starter_matches, ?),
+                            sub_in_matches = MAX(sub_in_matches, ?),
+                            bench_unused_matches = MAX(bench_unused_matches, ?),
+                            total_played_matches = MAX(total_played_matches, ?),
+                            total_squad_matches = MAX(total_squad_matches, ?)
+                        WHERE id = ?
+                    """, (pid, goals, yellows, reds, starters, sub_ins, bench, total_played, total_squad, row[0]))
+                else:
+                    cur.execute("""
+                        INSERT INTO player_season_stats (
+                            player_id, ktff_player_id, season, goals, yellow_cards, red_cards,
+                            starter_matches, sub_in_matches, bench_unused_matches,
+                            total_played_matches, total_squad_matches
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (pid, k_pid, target_season, goals, yellows, reds, starters, sub_ins, bench, total_played, total_squad))
+                updated_stats_count += 1
+        print(f"[✓] {target_season}: {updated_stats_count} futbolcunun sezon istatistikleri senkronize edildi.")
 
     conn.commit()
-    print(f"[✓] {updated_stats_count} futbolcunun 2026-2027 sezon istatistikleri başarıyla güncellendi.")
 
 def main():
     start_all = time.time()
+    init_db()
+
+    # Step 0: Seed Leagues, Clubs & Coaches (including BTM 1.Lig)
+    from scraper.scrape_leagues import init_leagues_and_seasons
+    from scraper.scrape_current_league_clubs import run_scrape_current_clubs
+    from scraper.scrape_league_coaches import run_scrape_coaches_for_current_season
+
+    init_leagues_and_seasons()
+    conn_chk = get_connection()
+    club_cnt = conn_chk.execute("SELECT COUNT(*) FROM clubs").fetchone()[0]
+    coach_cnt = conn_chk.execute("SELECT COUNT(*) FROM coaches").fetchone()[0]
+    conn_chk.close()
+    if club_cnt < 51:
+        run_scrape_current_clubs()
+    else:
+        print(f"[✓] Kulüpler tablosu güncel ({club_cnt} kulüp: Süper Lig, 1.Lig ve BTM 1.Lig).")
+    if coach_cnt < 50:
+        run_scrape_coaches_for_current_season()
+    else:
+        print(f"[✓] Teknik Direktörler tablosu güncel ({coach_cnt} antrenör).")
+
     conn = get_connection()
     client = KTFFClient(use_cache=False, delay_seconds=0.04)
     
-    # Step 1: Scan
+    # Step 1: Scan Matches
     matches_to_scrape = scan_for_matches_needing_update(client, conn)
     
-    # Step 2: Scrape & Save
+    # Step 2: Scrape & Save Matches
     if matches_to_scrape:
-        run_match_updates(matches_to_scrape, workers=8)
+        run_match_updates(matches_to_scrape, workers=10)
     else:
         print("[✓] Tüm maçlar zaten veritabanında en güncel haliyle mevcut.")
+
+    # Step 2.5: Scrape Active Players for BTM 1.Lig & New Registrations
+    scrape_new_and_btm1_active_players(client, conn, workers=12)
         
     # Step 3: Sync Season Stats
     sync_player_season_stats_2026(conn)

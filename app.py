@@ -925,7 +925,7 @@ elif menu == "📋 Antrenör Doğrulama & Model İsabeti":
 # =============================================================================
 elif menu == "🔍 Futbolcu Havuzu & Filtreleme":
     st.header("🔍 Kapsamlı Futbolcu Havuzu & Arama")
-    st.markdown("2.404 aktif KTFF futbolcusu arasında mevki, reyting, yaş ve alt becerilere göre derinlemesine filtreleme yapın.")
+    st.markdown(f"{len(players_df):,} aktif KTFF futbolcusu arasında mevki, reyting, yaş ve alt becerilere göre derinlemesine filtreleme yapın.")
     
     f1, f2, f3, f4, f5 = st.columns(5)
     with f1:
@@ -997,7 +997,7 @@ elif menu == "🔍 Futbolcu Havuzu & Filtreleme":
 # =============================================================================
 elif menu == "📊 Lig Analitiği & Ekosistem":
     st.header("📊 KTFF Lig Ekosistemi & İstatistiksel Dağılımlar")
-    st.markdown("Veritabanımızdaki 1.178 maç, 2.404 futbolcu ve 30 A takım kulübü üzerinden makro analitik görünümü.")
+    st.markdown(f"Veritabanımızdaki {len(matches_df):,} oynanmış maç, {len(players_df):,} futbolcu ve {len(clubs_df)} A takım kulübü üzerinden makro analitik görünümü.")
     
     k1, k2, k3, k4 = st.columns(4)
     k1.metric("Toplam Aktif Futbolcu", f"{len(players_df):,}")
@@ -1054,7 +1054,7 @@ elif menu == "📊 Lig Analitiği & Ekosistem":
         club_summary, x='Yaş Ortalaması', y='Ortalama OVR', size='Kadro Büyüklüğü',
         color='league_name', hover_name='current_club',
         labels={'Yaş Ortalaması': 'Kadro Yaş Ortalaması', 'Ortalama OVR': 'Kadro Ortalama OVR'},
-        color_discrete_sequence=['#38bdf8', '#f59e0b']
+        color_discrete_sequence=['#38bdf8', '#f59e0b', '#ef4444', '#10b981']
     )
     fig_scatter.update_layout(
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',

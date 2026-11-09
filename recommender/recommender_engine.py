@@ -293,16 +293,18 @@ class ScoutMeRecommender:
 
         # Club characteristics (computed on Senior A-Team matches & squad)
         is_super = c_meta.get('is_super_lig', True)
+        is_btm1 = c_meta.get('is_btm1', 'BTM' in str(c_meta.get('league_name', '')))
         c_def_need = max(0.0, (c_meta.get('goals_against_p90', 1.5) - 1.15) / 1.8)
         c_att_need = max(0.0, (1.95 - c_meta.get('goals_for_p90', 1.5)) / 1.8)
         c_avg_ovr = c_meta.get('avg_ovr', 64.0)
 
         # Precompute current SENIOR A-Team squad OVR distribution by position for opportunity modeling
         squad_pos_ovrs = {'GK': [], 'DF': [], 'MF': [], 'FW': []}
+        min_bench_matches = 2 if is_btm1 else 3
         for pidx, pmeta in self.player_meta.items():
             if (pmeta.get('club_name') or '').strip() == c_meta['name']:
                 # Only count real Senior A-Team players in the club's benchmark!
-                if pmeta.get('a_team_matches', 0) >= 3:
+                if pmeta.get('a_team_matches', 0) >= min_bench_matches:
                     pcat = pmeta.get('pos_cat', 'MF')
                     if pcat in squad_pos_ovrs:
                         squad_pos_ovrs[pcat].append(pmeta['ovr'])
@@ -364,10 +366,16 @@ class ScoutMeRecommender:
             if not youth_only:
                 # Standard A-Team Transfer Mode:
                 # Never recommend 15, 16, 17-year-old youth league players or players without A-Team proof!
-                if age < 18 and (a_team_matches < 10 or senior_minutes < 600):
-                    continue
-                if a_team_matches < 5 or senior_minutes < 225:
-                    continue
+                if is_btm1:
+                    if age < 18 and (a_team_matches < 6 or senior_minutes < 360):
+                        continue
+                    if a_team_matches < 3 or senior_minutes < 135:
+                        continue
+                else:
+                    if age < 18 and (a_team_matches < 10 or senior_minutes < 600):
+                        continue
+                    if a_team_matches < 5 or senior_minutes < 225:
+                        continue
             else:
                 # U21 Youth Discovery Mode (Yaş <= 21):
                 if not is_youth:
@@ -404,6 +412,12 @@ class ScoutMeRecommender:
                         tier_fit = 0.72
                     elif ovr >= 72.0:
                         tier_fit = 1.06
+                elif is_btm1:
+                    # BTM 1. Lig target club: top Süper Lig / 1. Lig stars (>73 OVR) are unrealistic transfers
+                    if ovr > 73.5:
+                        tier_fit = 0.65
+                    elif 55.0 <= ovr <= 69.5:
+                        tier_fit = 1.08
                 else:
                     # 1. Lig target club: elite Süper Lig stars (>79 OVR) are less likely to drop down
                     if ovr > 79.0:
@@ -594,9 +608,17 @@ class ScoutMeRecommender:
 
             t_score = float(np.clip((sim_clubs[c_idx] + 1.0) / 2.0, 0.0, 1.0))
             is_super = c_meta['is_super_lig']
+            is_btm1 = c_meta.get('is_btm1', 'BTM' in str(c_meta.get('league_name', '')))
 
             # Tier suitability based on competition-calibrated OVR
-            tier_bonus = 0.10 if (is_super and p_meta['ovr'] >= 70.0) else (0.10 if (not is_super and p_meta['ovr'] < 68.0) else 0.0)
+            if is_super and p_meta['ovr'] >= 70.0:
+                tier_bonus = 0.10
+            elif not is_super and not is_btm1 and 62.0 <= p_meta['ovr'] < 72.0:
+                tier_bonus = 0.10
+            elif is_btm1 and p_meta['ovr'] < 66.0:
+                tier_bonus = 0.10
+            else:
+                tier_bonus = 0.0
 
             # Opportunity: Does this club have room for this player in its Senior A-Team?
             pos_bench = c_meta.get('avg_ovr', 64.0)

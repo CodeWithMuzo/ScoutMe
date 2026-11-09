@@ -149,16 +149,22 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         idx_to_club_id[idx] = cid
         clean_cname = cname.strip()
         club_name_to_idx[clean_cname] = idx
+        l_str = str(cleague or '')
+        is_super = bool('Süper' in l_str or 'Super' in l_str)
+        is_btm1 = bool('BTM' in l_str)
+        tier_norm = 1.0 if is_super else (0.35 if is_btm1 else 0.65)
         club_metadata[idx] = {
             'club_id': cid,
             'name': clean_cname,
             'league_name': cleague,
             'city': city,
             'stadium': stadium,
-            'is_super_lig': bool('Süper' in str(cleague) or 'Super' in str(cleague))
+            'is_super_lig': is_super,
+            'is_btm1': is_btm1,
+            'tier_norm': tier_norm
         }
 
-    # Aggregate SENIOR A-Team squad metrics per club (only players with >= 3 A-Team matches)
+    # Aggregate SENIOR A-Team squad metrics per club (players with >= 2 A-Team matches or active squad)
     cur.execute('''
         SELECT 
             p.current_club,
@@ -174,7 +180,7 @@ def build_scoutme_graph(db_path='data/ktff.db'):
             SUM(CASE WHEN p.position_category = 'FW' THEN 1 ELSE 0 END) as fw_cnt
         FROM players p
         JOIN player_skills s ON p.id = s.player_id
-        WHERE s.a_team_matches >= 3
+        WHERE s.a_team_matches >= 2
         GROUP BY p.current_club
     ''')
     squad_stats = {r[0].strip(): r[1:] for r in cur.fetchall() if r[0]}
@@ -183,7 +189,10 @@ def build_scoutme_graph(db_path='data/ktff.db'):
     cur.execute('''
         SELECT home_club, SUM(home_score) as scored, SUM(away_score) as conceded, COUNT(*) as matches
         FROM matches 
-        WHERE status = 'played' AND league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
+        WHERE status = 'played' AND (
+            league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig', 'BTM 1.Lig Kırmızı Grup', 'BTM 1.Lig Beyaz Grup', 'BTM 1.Lig')
+            OR league_name LIKE 'BTM 1.Lig%'
+        )
         GROUP BY home_club
     ''')
     home_matches = {r[0].strip(): (r[1] or 0, r[2] or 0, r[3] or 0) for r in cur.fetchall() if r[0]}
@@ -191,7 +200,10 @@ def build_scoutme_graph(db_path='data/ktff.db'):
     cur.execute('''
         SELECT away_club, SUM(away_score) as scored, SUM(home_score) as conceded, COUNT(*) as matches
         FROM matches 
-        WHERE status = 'played' AND league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
+        WHERE status = 'played' AND (
+            league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig', 'BTM 1.Lig Kırmızı Grup', 'BTM 1.Lig Beyaz Grup', 'BTM 1.Lig')
+            OR league_name LIKE 'BTM 1.Lig%'
+        )
         GROUP BY away_club
     ''')
     away_matches = {r[0].strip(): (r[1] or 0, r[2] or 0, r[3] or 0) for r in cur.fetchall() if r[0]}
@@ -199,9 +211,10 @@ def build_scoutme_graph(db_path='data/ktff.db'):
     club_features = []
     for idx in range(len(raw_clubs)):
         cname = club_metadata[idx]['name']
-        is_super = 1.0 if club_metadata[idx]['is_super_lig'] else 0.0
+        tier_norm = club_metadata[idx]['tier_norm']
+        default_ovr = 66.0 if club_metadata[idx]['is_super_lig'] else (58.0 if club_metadata[idx]['is_btm1'] else 62.5)
 
-        sq = squad_stats.get(cname, (20, 64.0, 64.0, 55.0, 61.0, 64.0, 2, 6, 8, 4))
+        sq = squad_stats.get(cname, (18, default_ovr, default_ovr, default_ovr - 6.0, default_ovr - 2.0, default_ovr, 2, 6, 6, 4))
         (sq_size, avg_ovr, avg_phys, avg_shoot, avg_tech, avg_def, gk_c, df_c, mf_c, fw_c) = sq
         sq_size = max(1, sq_size)
 
@@ -212,26 +225,26 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         goals_against_p90 = (hm[1] + am[1]) / total_m
 
         club_metadata[idx].update({
-            'avg_ovr': round(float(avg_ovr or 64.0), 1),
-            'avg_phys': round(float(avg_phys or 64.0), 1),
-            'avg_shoot': round(float(avg_shoot or 55.0), 1),
-            'avg_tech': round(float(avg_tech or 61.0), 1),
-            'avg_def': round(float(avg_def or 64.0), 1),
+            'avg_ovr': round(float(avg_ovr or default_ovr), 1),
+            'avg_phys': round(float(avg_phys or default_ovr), 1),
+            'avg_shoot': round(float(avg_shoot or (default_ovr - 6.0)), 1),
+            'avg_tech': round(float(avg_tech or (default_ovr - 2.0)), 1),
+            'avg_def': round(float(avg_def or default_ovr), 1),
             'goals_for_p90': round(float(goals_for_p90), 2),
             'goals_against_p90': round(float(goals_against_p90), 2),
             'squad_size': int(sq_size)
         })
 
         feat = [
-            is_super,
-            (avg_ovr or 64.0) / 100.0,
-            (avg_phys or 64.0) / 100.0,
-            (avg_shoot or 55.0) / 100.0,
-            (avg_tech or 61.0) / 100.0,
-            (avg_def or 64.0) / 100.0,
+            tier_norm,
+            (avg_ovr or default_ovr) / 100.0,
+            (avg_phys or default_ovr) / 100.0,
+            (avg_shoot or (default_ovr - 6.0)) / 100.0,
+            (avg_tech or (default_ovr - 2.0)) / 100.0,
+            (avg_def or default_ovr) / 100.0,
             float(gk_c or 2) / sq_size,
             float(df_c or 6) / sq_size,
-            float(mf_c or 8) / sq_size,
+            float(mf_c or 6) / sq_size,
             float(fw_c or 4) / sq_size,
             float(np.clip(goals_for_p90 / 3.0, 0.0, 1.0)),
             float(np.clip(goals_against_p90 / 3.0, 0.0, 1.0))
@@ -364,8 +377,13 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         p_idx = player_license_to_idx.get(lic_str)
         c_idx = club_name_to_idx.get(cname_clean)
         if p_idx is not None and c_idx is not None:
-            is_sen = lname in ('AKSA Süper Lig', 'AKSA 1.Lig')
-            tier_mult = 1.0 if is_sen else 0.35
+            lname_str = str(lname or '')
+            if lname_str in ('AKSA Süper Lig', 'AKSA 1.Lig'):
+                tier_mult = 1.0
+            elif 'BTM' in lname_str:
+                tier_mult = 0.80
+            else:
+                tier_mult = 0.35
             weight = float(np.log1p((m_sum or (cnt * 60)) * tier_mult))
             player_club_edges.add((p_idx, c_idx))
             player_club_weights[(p_idx, c_idx)] = max(player_club_weights.get((p_idx, c_idx), 0.0), weight)
@@ -424,7 +442,10 @@ def build_scoutme_graph(db_path='data/ktff.db'):
         FROM match_lineups l
         JOIN matches m ON l.match_id = m.id
         JOIN players p ON l.license_no = p.license_no
-        WHERE l.minutes_played > 0 AND m.league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig')
+        WHERE l.minutes_played > 0 AND (
+            m.league_name IN ('AKSA Süper Lig', 'AKSA 1.Lig', 'BTM 1.Lig Kırmızı Grup', 'BTM 1.Lig Beyaz Grup', 'BTM 1.Lig')
+            OR m.league_name LIKE 'BTM 1.Lig%'
+        )
     ''')
     lineup_p_rows = cur.fetchall()
     match_club_players = defaultdict(list)
